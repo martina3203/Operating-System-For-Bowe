@@ -19,7 +19,6 @@ class OSInfo
         void test();
     protected:
     private:
-        void calculateTime();
         std::string time;
         std::string date;
         float versionNumber;
