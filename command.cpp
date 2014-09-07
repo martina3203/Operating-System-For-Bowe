@@ -59,7 +59,6 @@ command::~command()
     //Destructor
 }
 
-
 void command::test()
 {
     //test function for command object
@@ -320,10 +319,16 @@ void commandList::constructValidList()
     //OS Request Commands
     validCommands.push_back("show");
     validCommands.push_back("print");
+    validCommands.push_back("set");
     validCommands.push_back("help");
     return;
 }
 
+//Returns a list of valid commands
+std::vector<std::string> commandList::returnValidList()
+{
+    return validCommands;
+}
 
 //Adds command to list of previous commands
 bool commandList::addCommand(command &newCommand)

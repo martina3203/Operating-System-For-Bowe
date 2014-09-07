@@ -1,6 +1,7 @@
 #include "personalFunctions.h"
 
 
+//Converts a Given Integer to a String
 std::string convertIntToString(int number)
 {
     std::string result = "";
@@ -10,3 +11,12 @@ std::string convertIntToString(int number)
     return result;
 }
 
+//Waits for User to Press Enter before continuing
+void pauseForUser()
+{
+    std::string dumbyVariable;
+    std::cout << "Press Enter to Continue." << std::endl;
+    getline(std::cin,dumbyVariable);
+
+    return;
+}

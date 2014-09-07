@@ -62,6 +62,34 @@ std::string OSInfo::returnOSName()
     return OSName;
 }
 
+void OSInfo::setDate()
+{
+    int input;
+    std::string newDate = "";
+
+    std::cout << "Please input the current month in numerical form:" <<std::endl;
+    std::cin >> input;
+    newDate = newDate + "/" + convertIntToString(input);
+
+
+
+    std::cout << "Please set the current day in numerical form:" <<std::endl;
+    std::cin >> input;
+    convertIntToString(input);
+    newDate = newDate + "/" + convertIntToString(input);
+
+
+    std::cout << "Please set the current year in numerical form:" << std::endl;
+    std::cin >> input;
+    convertIntToString(input);
+    newDate = newDate + "/" + convertIntToString(input);
+
+    //Clears buffer
+    std::cin.ignore();
+
+    return;
+}
+
 float OSInfo::returnVersionNumber()
 {
     return versionNumber;

@@ -36,6 +36,7 @@ class commandList
         ~commandList();
         bool addCommand(command &newCommand);
         void printList();
+        std::vector<std::string> returnValidList();
     protected:
     private:
         std::vector<command> commandHistory;

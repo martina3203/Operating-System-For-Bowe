@@ -3,6 +3,7 @@
 
 #include <command.h>
 #include "OSInfo.h"
+#include "PCB.h"
 
 
 class OS
@@ -21,6 +22,7 @@ class OS
         void startScreen();
         void executeOrder(command newCommand);
         void accessDirectory(std::string address);
+        void help();
 };
 
 #endif // OS_H
