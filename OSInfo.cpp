@@ -44,14 +44,23 @@ std::string OSInfo::returnOSInfo(command request)
         struct tm * timePointer = std::localtime(&currentTime);
 
         //Changes Numbers to Strings
-        returnedInformation = "The Date is ";
-        std::string month = convertIntToString(timePointer -> tm_mon);
-        std::string day = convertIntToString(timePointer -> tm_mday);
-        std::string year = convertIntToString(timePointer -> tm_year + 1900);
+        if (date == "")
+        {
+            returnedInformation = "The Date is ";
+            std::string month = convertIntToString(timePointer -> tm_mon);
+            std::string day = convertIntToString(timePointer -> tm_mday);
+            std::string year = convertIntToString(timePointer -> tm_year + 1900);
 
-        //Create new string
-        returnedInformation = returnedInformation + month;
-        returnedInformation = returnedInformation + "/" + day + "/" + year;
+            //Create new string
+            returnedInformation = returnedInformation + month;
+            returnedInformation = returnedInformation + "/" + day + "/" + year;
+            return returnedInformation;
+        }
+        else
+        {
+            returnedInformation = "The Date is " + date;
+            return returnedInformation;
+        }
     }
 
     return returnedInformation;
@@ -65,25 +74,30 @@ std::string OSInfo::returnOSName()
 void OSInfo::setDate()
 {
     int input;
+    char charInput;
     std::string newDate = "";
 
     std::cout << "Please input the current month in numerical form:" <<std::endl;
     std::cin >> input;
-    newDate = newDate + "/" + convertIntToString(input);
+    newDate = newDate + convertIntToString(input);
 
 
 
     std::cout << "Please set the current day in numerical form:" <<std::endl;
     std::cin >> input;
-    convertIntToString(input);
     newDate = newDate + "/" + convertIntToString(input);
 
 
     std::cout << "Please set the current year in numerical form:" << std::endl;
     std::cin >> input;
-    convertIntToString(input);
     newDate = newDate + "/" + convertIntToString(input);
 
+    std::cout << "Is this the correct date you want? " << newDate << " Y/N?" << std::endl;
+    std::cin >> charInput;
+    if (charInput == 'Y' || charInput == 'y')
+    {
+        date = newDate;
+    }
     //Clears buffer
     std::cin.ignore();
 

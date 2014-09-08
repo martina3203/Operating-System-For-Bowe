@@ -1,7 +1,7 @@
 #ifndef OS_H
 #define OS_H
 
-#include <command.h>
+#include "command.h"
 #include "OSInfo.h"
 #include "PCB.h"
 

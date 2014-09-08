@@ -102,6 +102,15 @@ void OS::executeOrder(command newCommand)
     {
         help();
     }
+    else if (keyword == "set")
+    {
+        newCommand.convert(2);
+        secondaryInformation = newCommand.returnTargetInformation();
+        if (secondaryInformation == "date")
+        {
+            systemInfo.setDate();
+        }
+    }
     else
     {
         std::cout << "Invalid Command" << std::endl;
