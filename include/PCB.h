@@ -13,18 +13,30 @@ enum processType
     application
 };
 
+enum processState
+{
+    running,
+    ready,
+    blocked
+};
+
 
 class PCB
 {
     public:
         PCB();
-        PCB(std::string newName,processType type = system);
+        PCB(std::string newName,int priority = 1,processType type = system);
         virtual ~PCB();
         void testPCB();
+
+        //Setters
+        void setMemoryNeeded(int);
+        void setCurrenState(processState);
 
         //Return Functions
         std::string returnProcessName();
         processType returnProcessType();
+        processState returnCurrentState();
         int returnPriority();
         int returnAmountOfMemory();
 
@@ -32,6 +44,7 @@ class PCB
     private:
         std::string processName;
         processType TypeOfProcess;
+        processState currentState;
         int priority;
         int memoryAllocatedAmount;
 

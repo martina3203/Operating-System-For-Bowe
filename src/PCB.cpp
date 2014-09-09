@@ -5,10 +5,13 @@ PCB::PCB()
     //Constructor
 }
 
-PCB::PCB(std::string newName, processType type)
+PCB::PCB(std::string newName,int priority, processType type)
 {
+    //Sets attributes based on parameters
     processName = newName;
+    this -> priority = priority;
     TypeOfProcess = type;
+    currentState = ready;
 }
 
 PCB::~PCB()
@@ -20,7 +23,27 @@ void PCB::testPCB()
 {
     std::cout << "Process Name: " << returnProcessName() << std::endl;
     std::cout << "Process Type(0 for system, 1 for application): " << returnProcessType() << std::endl;
+    std::cout << "Memory Allocated: " << memoryAllocatedAmount << std::endl;
+    std::cout << "Current State: " << currentState << std::endl;
 }
+
+
+//Setters Functions
+//Changes memory allocated
+void PCB::setMemoryNeeded(int newNumber)
+{
+    memoryAllocatedAmount = newNumber;
+    return;
+}
+
+//Changes the state of the process
+void PCB::setCurrenState(processState newState)
+{
+    currentState = newState;
+    return;
+}
+
+
 
 //Return Functions
 std::string PCB::returnProcessName()
@@ -32,6 +55,11 @@ std::string PCB::returnProcessName()
 processType PCB::returnProcessType()
 {
     return TypeOfProcess;
+}
+
+processState PCB::returnCurrentState()
+{
+    return currentState;
 }
 
 //Returns the numerical priority of the process

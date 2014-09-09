@@ -4,7 +4,7 @@
 #include "command.h"
 #include "OSInfo.h"
 #include "PCB.h"
-
+#include "processScheduler.h"
 
 class OS
 {
