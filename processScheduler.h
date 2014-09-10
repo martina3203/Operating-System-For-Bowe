@@ -18,6 +18,7 @@ public:
     Node<PCB> * returnHeadProcess();
     Node<PCB> * returnLastProcess();
     Node<PCB> * findProcess(std::string name);
+    Node<PCB> * removeNode(Node<PCB> * targetPCB);
     int returnTotalNumberOfNodes();
     void test();
 private:
@@ -36,7 +37,12 @@ class processScheduler
     public:
         processScheduler();
         virtual ~processScheduler();
+        void test();
         void setupPCB(std::string name,int priority, processType type);
+        Node<PCB> * findPCB(std::string name);
+        void insertPCB(Node<PCB> * newProcess);
+        void removePCB(Node<PCB> * targetPCB);
+        void freePCB(Node<PCB> * targetPCB);
     protected:
     private:
         PCB currentProcess;

@@ -182,7 +182,6 @@ int linkedList::returnNodeCount()
             counter = counter++;
         }
     }
-
     return counter;
 }
 
@@ -212,8 +211,6 @@ Node<PCB> * linkedList::findNode(std::string name)
     }
 }
 
-
-
 void linkedList::printList()
 {
     PCB savedPCB;
@@ -236,4 +233,37 @@ void linkedList::printList()
     return;
 }
 
+Node<PCB> *  linkedList::removeNode(Node<PCB> * targetNode)
+{
+    Node<PCB> * traverseNode = headNode;
+
+    //Travel through the list
+    while (traverseNode != NULL)
+    {
+        //If you find the correct node
+        if (traverseNode == targetNode)
+        {
+            //saves previous node
+            Node<PCB> * previousNode = traverseNode -> returnPrevPointer();
+            //saves next node
+            Node<PCB> * followingNode = traverseNode -> returnNextPointer();
+            //Ensures it does not equal Null
+            if (previousNode != NULL)
+            {
+                previousNode -> setNextPointer(traverseNode -> returnNextPointer());
+                if (followingNode != NULL)
+                {
+                    followingNode -> setPrevPointer(previousNode);
+                }
+                //Reset the Traverse Node of everything except it's data
+                traverseNode -> setNextPointer(NULL);
+                traverseNode -> setPrevPointer(NULL);
+                return traverseNode;
+            }
+
+        }
+    }
+
+    return NULL;
+}
 

@@ -49,6 +49,7 @@ class linkedList
         Node<PCB> * returnLastNode();
         int returnNodeCount();
         Node<PCB> * findNode(std::string name);
+        Node<PCB> * removeNode(Node<PCB> * targetNode);
         void printList();
 
     protected:
