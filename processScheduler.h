@@ -2,6 +2,7 @@
 #define PROCESSSCHEDULER_H
 
 #include "linkedList.h"
+#include "personalFunctions.h"
 #include <string>
 
 
@@ -20,6 +21,8 @@ public:
     Node<PCB> * findProcess(std::string name);
     Node<PCB> * removeNode(Node<PCB> * targetPCB);
     int returnTotalNumberOfNodes();
+    void printQueue();
+    void printProcessInformation(std::string name);
     void test();
 private:
     linkedList theList;

@@ -51,6 +51,85 @@ Node<PCB> * processQueue::removeNode(Node<PCB> * targetPCB)
     return theList.removeNode(targetPCB);
 }
 
+void processQueue::printQueue()
+{
+    theList.printList();
+    return;
+}
+
+void processQueue::printProcessInformation(std::string name)
+{
+    if (name != "ALL")
+    {
+        std::vector<PCB> currentList = theList.returnDataAsVector();
+        for (unsigned int i = 0; i < currentList.size(); i++)
+        {
+            if (name == currentList.at(i).returnProcessName())
+            {
+                std::cout << "Name\t\t\t\tState\tProcess Type\tMemory Used\tPriority" << std::endl <<std::endl;
+                std::cout << constructStringToSize(name,32);
+                //Prints State of the Program
+                if (currentList.at(i).returnCurrentState() == ready)
+                {
+                    std::cout << " Ready\t";
+                }
+                else
+                {
+                    std::cout << " Blocked\t";
+                }
+
+                //Prints type of program (System or Application)
+                if (currentList.at(i).returnProcessType() == system)
+                {
+                    std::cout << "System\t\t";
+                }
+                else
+                {
+                    std::cout << "Application\t\t";
+                }
+
+                std::cout << currentList.at(i).returnAmountOfMemory() << "\t\t" << currentList.at(i).returnPriority() << std::endl;
+                return;
+            }
+        }
+        std::cout << "Process does not exist" << std::endl;
+    }
+    else
+    {
+        std::vector<PCB> currentList = theList.returnDataAsVector();
+        if (currentList.size() != 0)
+        {
+            std::cout << "Name\t\t\t\tState\tProcess Type\tMemory Used\tPriority" << std::endl <<std::endl;
+            for (unsigned int i = 0; i < currentList.size(); i++)
+            {
+                    std::cout << constructStringToSize(currentList.at(i).returnProcessName(),32);
+                    //Prints State of the Program
+                    if (currentList.at(i).returnCurrentState() == ready)
+                    {
+                        std::cout << "Ready\t";
+                    }
+                    else
+                    {
+                        std::cout << "Blocked\t";
+                    }
+
+                    //Prints type of program (System or Application)
+                    if (currentList.at(i).returnProcessType() == system)
+                    {
+                        std::cout << "System\t\t";
+                    }
+                    else
+                    {
+                        std::cout << "Application\t\t";
+                    }
+
+                    std::cout << currentList.at(i).returnAmountOfMemory() << "\t\t" << currentList.at(i).returnPriority() << std::endl;
+            }
+        }
+    }
+    return;
+}
+
 void processQueue::test()
 {
     PCB newPCB("Walnuts");
@@ -59,9 +138,7 @@ void processQueue::test()
     addProcess(secondNewPCB);
     addProcess(thirdNewPCB);
     addProcess(newPCB);
-    removeProcess();
-    theList.printList();
-    std::cout << returnTotalNumberOfNodes();
+    printProcessInformation("ALL");
     return;
 }
 
@@ -83,14 +160,15 @@ processScheduler::~processScheduler()
 
 void processScheduler::test()
 {
-    PCB newPCB("Hi");
+    PCB newPCB("Hi",1,system);
 
     Node<PCB> * newProcess = new Node<PCB>;
-    newProcess -> setData(newPCB);
+    setupPCB("Chicken Shit",1,system);
     setupPCB("Hot Pocket",1,system);
-    insertPCB(newProcess);
+    newProcess = findPCB("Hot Pocket");
     removePCB(newProcess);
     std::cout << readyQueue.returnTotalNumberOfNodes();
+    readyQueue.printQueue();
 
     return;
 }
@@ -103,6 +181,7 @@ void processScheduler::setupPCB(std::string name,int priority,processType type)
     if ((readyQueue.findProcess(name) == NULL) && (blockedQueue.findProcess(name) == NULL))
     {
         PCB newPCB(name,priority,type);
+        std::cout << "Process Added" << std::endl;
         readyQueue.addProcess(newPCB);
     }
     else
@@ -115,6 +194,7 @@ void processScheduler::setupPCB(std::string name,int priority,processType type)
 void processScheduler::freePCB(Node<PCB> * targetPCB)
 {
     delete targetPCB;
+    targetPCB = NULL;
     return;
 }
 
@@ -142,7 +222,7 @@ void processScheduler::insertPCB(Node<PCB> * newProcess)
     // If a Duplicate is found, print error and exit
     if (findPCB(nameOfProcess) != NULL)
     {
-        std::cout << "Duplicate Found. Node was not inserted." << std::endl;
+        std::cout << "Duplicate Found. Process was not inserted." << std::endl;
         return;
     }
 
@@ -171,8 +251,16 @@ void processScheduler::insertPCB(Node<PCB> * newProcess)
 void processScheduler::removePCB(Node<PCB> * targetPCB)
 {
     Node<PCB> * savedNode = findPCB(targetPCB -> returnData().returnProcessName());
-    //readyQueue.removeNode(savedNode);
-    //blockedQueue.removeNode(savedNode);
-    //freePCB(targetPCB);
+    if(savedNode != NULL)
+    {
+        readyQueue.removeNode(savedNode);
+        blockedQueue.removeNode(savedNode);
+        //freePCB(targetPCB);
+    }
+    else
+    {
+        //Fail Message
+        std::cout << "Process does not exist" << std::endl;
+    }
     return;
 }

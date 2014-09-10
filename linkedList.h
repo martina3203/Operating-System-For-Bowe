@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 #include "PCB.h"
 
 template <class T>
@@ -51,6 +52,7 @@ class linkedList
         Node<PCB> * findNode(std::string name);
         Node<PCB> * removeNode(Node<PCB> * targetNode);
         void printList();
+        std::vector<PCB> returnDataAsVector();
 
     protected:
     private:

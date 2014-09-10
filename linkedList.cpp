@@ -190,6 +190,7 @@ Node<PCB> * linkedList::findNode(std::string name)
 {
     if (headNode == NULL)
     {
+        //List is empty, so return Null
         return NULL;
     }
     else
@@ -199,11 +200,14 @@ Node<PCB> * linkedList::findNode(std::string name)
         while (traverseNode != NULL)
         {
             //If a matching name is found
-            if (traverseNode -> returnData().returnProcessName() == name)
+            std::string currentName = traverseNode->returnData().returnProcessName();
+            if (currentName == name)
             {
                 //Return the pointer
+                std::cout << "Node Found" << std::endl;
                 return traverseNode;
             }
+
             traverseNode = traverseNode -> returnNextPointer();
         }
         //This is returned if nothing is found
@@ -250,7 +254,7 @@ Node<PCB> *  linkedList::removeNode(Node<PCB> * targetNode)
             //Ensures it does not equal Null
             if (previousNode != NULL)
             {
-                previousNode -> setNextPointer(traverseNode -> returnNextPointer());
+                previousNode -> setNextPointer(followingNode);
                 if (followingNode != NULL)
                 {
                     followingNode -> setPrevPointer(previousNode);
@@ -262,8 +266,23 @@ Node<PCB> *  linkedList::removeNode(Node<PCB> * targetNode)
             }
 
         }
+        traverseNode = traverseNode -> returnNextPointer();
     }
 
     return NULL;
 }
 
+std::vector<PCB> linkedList::returnDataAsVector()
+{
+    std::vector<PCB> returnedVector;
+    Node<PCB> * traverseNode = headNode;
+
+    while (traverseNode != NULL)
+    {
+        //Adds the data itself to a vector
+        returnedVector.push_back(traverseNode -> returnData());
+        traverseNode = traverseNode -> returnNextPointer();
+    }
+
+    return returnedVector;
+}

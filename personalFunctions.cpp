@@ -20,3 +20,24 @@ void pauseForUser()
 
     return;
 }
+
+std::string constructStringToSize(std::string targetString, int sizeOfOutput)
+{
+    std::string newString = "";
+    for (unsigned int h = 0; h < targetString.size(); h++)
+    {
+        if (newString.size() < sizeOfOutput)
+        {
+            newString = newString + targetString.at(h);
+        }
+    }
+
+    //Adds Spaces if Needed
+    for (unsigned int i = newString.size(); i < sizeOfOutput; i++)
+    {
+        newString = newString + " ";
+    }
+
+
+    return newString;
+}
