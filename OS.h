@@ -17,6 +17,7 @@ class OS
     private:
         commandList OSCommandHistory;
         OSInfo systemInfo;
+        processScheduler systemProcesses;
 
         void bluescreen();
         void startScreen();

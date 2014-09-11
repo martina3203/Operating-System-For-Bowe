@@ -321,6 +321,7 @@ void commandList::constructValidList()
     validCommands.push_back("print");
     validCommands.push_back("set");
     validCommands.push_back("help");
+    validCommands.push_back("process");
     return;
 }
 

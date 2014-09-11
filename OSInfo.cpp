@@ -6,7 +6,7 @@ OSInfo::OSInfo()
 {
     //Constructor
     OSName = "Blue Screen Simulator 2014";
-    versionNumber = .1;
+    versionNumber = .2;
 }
 
 OSInfo::~OSInfo()

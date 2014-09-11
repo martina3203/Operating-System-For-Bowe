@@ -3,6 +3,7 @@
 
 #include "linkedList.h"
 #include "personalFunctions.h"
+#include "command.h"
 #include <string>
 
 
@@ -46,6 +47,7 @@ class processScheduler
         void insertPCB(Node<PCB> * newProcess);
         void removePCB(Node<PCB> * targetPCB);
         void freePCB(Node<PCB> * targetPCB);
+        void commandHandler(command newCommand);
     protected:
     private:
         PCB currentProcess;

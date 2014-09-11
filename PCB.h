@@ -15,8 +15,9 @@ enum processType
 
 enum processState
 {
-    running,
     ready,
+    suspendReady,
+    suspendBlocked,
     blocked
 };
 
@@ -31,7 +32,8 @@ class PCB
 
         //Setters
         void setMemoryNeeded(int);
-        void setCurrenState(processState);
+        void setCurrentState(processState);
+        void setPriority(int);
 
         //Return Functions
         std::string returnProcessName();

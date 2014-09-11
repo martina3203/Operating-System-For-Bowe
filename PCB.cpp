@@ -38,13 +38,16 @@ void PCB::setMemoryNeeded(int newNumber)
 }
 
 //Changes the state of the process
-void PCB::setCurrenState(processState newState)
+void PCB::setCurrentState(processState newState)
 {
     currentState = newState;
     return;
 }
 
-
+void PCB::setPriority(int newPriority)
+{
+    priority = newPriority;
+}
 
 //Return Functions
 std::string PCB::returnProcessName()

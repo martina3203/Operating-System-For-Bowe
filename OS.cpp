@@ -112,6 +112,10 @@ void OS::executeOrder(command newCommand)
             systemInfo.setDate();
         }
     }
+    else if (keyword == "process")
+    {
+        systemProcesses.commandHandler(newCommand);
+    }
     else
     {
         std::cout << "Invalid Command" << std::endl;

@@ -204,7 +204,6 @@ Node<PCB> * linkedList::findNode(std::string name)
             if (currentName == name)
             {
                 //Return the pointer
-                std::cout << "Node Found" << std::endl;
                 return traverseNode;
             }
 
@@ -237,10 +236,20 @@ void linkedList::printList()
     return;
 }
 
-Node<PCB> *  linkedList::removeNode(Node<PCB> * targetNode)
+Node<PCB> * linkedList::removeNode(Node<PCB> * targetNode)
 {
     Node<PCB> * traverseNode = headNode;
 
+    if (headNode == targetNode)
+    {
+        headNode = traverseNode -> returnNextPointer();
+        if (headNode != NULL)
+        {
+            headNode -> setPrevPointer(NULL);
+        }
+        return traverseNode;
+
+    }
     //Travel through the list
     while (traverseNode != NULL)
     {
@@ -255,15 +264,15 @@ Node<PCB> *  linkedList::removeNode(Node<PCB> * targetNode)
             if (previousNode != NULL)
             {
                 previousNode -> setNextPointer(followingNode);
-                if (followingNode != NULL)
-                {
-                    followingNode -> setPrevPointer(previousNode);
-                }
-                //Reset the Traverse Node of everything except it's data
-                traverseNode -> setNextPointer(NULL);
-                traverseNode -> setPrevPointer(NULL);
-                return traverseNode;
             }
+            if (followingNode != NULL)
+            {
+                followingNode -> setPrevPointer(previousNode);
+            }
+            //Resets attributes of the node
+            traverseNode -> setNextPointer(NULL);
+            traverseNode -> setPrevPointer(NULL);
+            return traverseNode;
 
         }
         traverseNode = traverseNode -> returnNextPointer();
@@ -276,12 +285,14 @@ std::vector<PCB> linkedList::returnDataAsVector()
 {
     std::vector<PCB> returnedVector;
     Node<PCB> * traverseNode = headNode;
-
-    while (traverseNode != NULL)
+    if (headNode != NULL)
     {
-        //Adds the data itself to a vector
-        returnedVector.push_back(traverseNode -> returnData());
-        traverseNode = traverseNode -> returnNextPointer();
+        while (traverseNode != NULL)
+        {
+            //Adds the data itself to a vector
+            returnedVector.push_back(traverseNode -> returnData());
+            traverseNode = traverseNode -> returnNextPointer();
+        }
     }
 
     return returnedVector;
