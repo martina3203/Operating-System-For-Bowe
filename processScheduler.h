@@ -5,6 +5,7 @@
 #include "personalFunctions.h"
 #include "command.h"
 #include <string>
+#include <fstream>
 
 
 class processQueue
@@ -32,10 +33,6 @@ private:
 };
 
 
-
-
-
-
 class processScheduler
 {
     public:
@@ -48,6 +45,7 @@ class processScheduler
         void removePCB(Node<PCB> * targetPCB);
         void freePCB(Node<PCB> * targetPCB);
         void commandHandler(command newCommand);
+        void readProcessesFromFile(std::string fileName);
     protected:
     private:
         PCB currentProcess;

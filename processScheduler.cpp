@@ -185,15 +185,7 @@ processScheduler::~processScheduler()
 
 void processScheduler::test()
 {
-    PCB newPCB("Hi",1,system);
-
-    Node<PCB> * newProcess = new Node<PCB>;
-    setupPCB("Chicken Shit",1,system);
-    setupPCB("Hot Pocket",1,system);
-    newProcess = findPCB("Hot Pocket");
-    removePCB(newProcess);
-    std::cout << readyQueue.returnTotalNumberOfNodes();
-    readyQueue.printQueue();
+    readProcessesFromFile("chicken.txt");
 
     return;
 }
@@ -303,6 +295,8 @@ void processScheduler::commandHandler(command newCommand)
     if (secondaryInformation == "createprocess")
     {
         //Creation of Process
+        int userNumber;
+        int processPriorityNumber;
         bool validAnswer = false;
         std::cout << "Input Process Name: " << std::endl;
         std::string process;
@@ -312,11 +306,11 @@ void processScheduler::commandHandler(command newCommand)
         while (validAnswer == false)
         {
             std::cout << "Input the priority number: " << std::endl;
-            int userNumber;
             std::cin >> userNumber;
             if ((userNumber < 128) && (userNumber > -127))
             {
                 validAnswer = true;
+                processPriorityNumber = userNumber;
             }
             else
             {
@@ -332,12 +326,12 @@ void processScheduler::commandHandler(command newCommand)
             std::cin >> userNumber;
             if (userNumber == 1)
             {
-                setupPCB(process,userNumber,system);
+                setupPCB(process,processPriorityNumber,system);
                 validAnswer = true;
             }
             else if (userNumber == 2)
             {
-                setupPCB(process,userNumber,application);
+                setupPCB(process,processPriorityNumber,application);
                 validAnswer = true;
             }
             else
@@ -484,6 +478,7 @@ void processScheduler::commandHandler(command newCommand)
         std::cout << "List name of the process to be printed: " << std::endl;
         std::cin >> targetProcess;
         readyQueue.printProcessInformation(targetProcess);
+        blockedQueue.printProcessInformation(targetProcess);
     }
     else if (secondaryInformation == "printall")
     {
@@ -495,4 +490,65 @@ void processScheduler::commandHandler(command newCommand)
         std::cout << "Unknown Command" << std::endl;
     }
     std::cin.ignore();
+}
+
+void processScheduler::readProcessesFromFile(std::string fileName)
+{
+    std::fstream openedFile;
+    openedFile.open(fileName.c_str());
+    //Variables for saving
+    std::string processName;
+    char typeOfProcess;
+    int priorityOfNewProcess;
+    int memoryNeeded;
+    int timeRemaining;
+    int arrivalTime;
+    int CPUPercentage;
+    //If the file is opened
+    if (openedFile.is_open())
+    {
+        std::cout << "File opened" << std::endl;
+        //While reading a file
+        while (!openedFile.eof())
+        {
+            //Read Process Name
+            openedFile >> processName;
+
+            //Read process type A or S
+            openedFile >> typeOfProcess;
+            if (typeOfProcess != 'A' && typeOfProcess != 'S')
+            {
+                std::cout << "Invalid format. Reading Terminated." << std::endl;
+                break;
+            }
+
+            //Read Priority Number
+            openedFile >> priorityOfNewProcess;
+            if (priorityOfNewProcess > 128 && priorityOfNewProcess < -127)
+            {
+                std::cout << "Invalid format. Reading Terminated." << std::endl;
+                break;
+            }
+            //Read Memory
+            openedFile >> memoryNeeded;
+            //Read time remaining in process
+            openedFile >> timeRemaining;
+            //Arrival time
+            openedFile >> arrivalTime;
+            //Read CPU Percentage
+            openedFile >> CPUPercentage;
+
+            std::cout << "Process " << processName << " loaded." << std::endl;
+
+        }
+
+    }
+    //Can't find file
+    else
+    {
+        std::cout << "File does not exist" << std::endl;
+    }
+
+    openedFile.close();
+    return;
 }
