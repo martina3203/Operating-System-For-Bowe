@@ -34,6 +34,9 @@ class PCB
         void setMemoryNeeded(int);
         void setCurrentState(processState);
         void setPriority(int);
+        void setTimeRemaining(int);
+        void setArrivalTime(int);
+        void setCPUPercentage(int);
 
         //Return Functions
         std::string returnProcessName();
@@ -41,6 +44,9 @@ class PCB
         processState returnCurrentState();
         int returnPriority();
         int returnAmountOfMemory();
+        int returnTimeRemaining();
+        int returnArrivalTime();
+        int returnCPUPercentage();
 
     protected:
     private:
@@ -49,6 +55,9 @@ class PCB
         processState currentState;
         int priority;
         int memoryAllocatedAmount;
+        int timeRemaining;
+        int arrivalTime;
+        int CPUPercentageInUse;
 
 };
 

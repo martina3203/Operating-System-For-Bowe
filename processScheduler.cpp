@@ -68,8 +68,8 @@ void processQueue::printProcessInformation(std::string name)
             {
                 if (name == currentList.at(i).returnProcessName())
                 {
-                    std::cout << "Name\t\t\t\tState\tProcess Type Memory Used Priority" << std::endl <<std::endl;
-                    std::cout << constructStringToSize(name,31);
+                    std::cout << "Name        | State |\tProc. Type | Memory Used | Priority" << std::endl <<std::endl;
+                    std::cout << constructStringToSize(name,14);
                     //Prints State of the Program
                     if (currentList.at(i).returnCurrentState() == ready)
                     {
@@ -91,11 +91,11 @@ void processQueue::printProcessInformation(std::string name)
                     //Prints type of program (System or Application)
                     if (currentList.at(i).returnProcessType() == system)
                     {
-                        std::cout << "System\t\t";
+                        std::cout << "Sys.\t\t";
                     }
                     else
                     {
-                        std::cout << "Application\t\t";
+                        std::cout << "App.\t\t";
                     }
 
                     std::cout << currentList.at(i).returnAmountOfMemory() << "\t\t" << currentList.at(i).returnPriority() << std::endl;
@@ -109,14 +109,14 @@ void processQueue::printProcessInformation(std::string name)
             std::vector<PCB> currentList = theList.returnDataAsVector();
             if (currentList.size() != 0)
             {
-                std::cout << "Name\t\t\t\tState\tProcess Type Memory Used Priority" << std::endl <<std::endl;
+                std::cout << "Name        | State |\tProc. Type | Memory Used | Priority" << std::endl <<std::endl;
                 for (unsigned int i = 0; i < currentList.size(); i++)
                 {
                         if (i % 19 == 18)
                         {
                             pauseForUser();
                         }
-                        std::cout << constructStringToSize(currentList.at(i).returnProcessName(),31);
+                        std::cout << constructStringToSize(currentList.at(i).returnProcessName(),14);
                         //Prints State of the Program
                         if (currentList.at(i).returnCurrentState() == ready)
                         {
@@ -138,11 +138,11 @@ void processQueue::printProcessInformation(std::string name)
                         //Prints type of program (System or Application)
                         if (currentList.at(i).returnProcessType() == system)
                         {
-                            std::cout << "System\t\t";
+                            std::cout << "  Sys.\t\t";
                         }
                         else
                         {
-                            std::cout << "Application\t\t";
+                            std::cout << "  App.\t\t";
                         }
 
                         std::cout << currentList.at(i).returnAmountOfMemory() << "\t\t" << currentList.at(i).returnPriority() << std::endl;
@@ -186,6 +186,8 @@ processScheduler::~processScheduler()
 void processScheduler::test()
 {
     readProcessesFromFile("chicken.txt");
+    ShortestJobFirst();
+    readyQueue.printProcessInformation("ALL");
 
     return;
 }
@@ -340,7 +342,11 @@ void processScheduler::commandHandler(command newCommand)
             }
         }
     }
-
+    else if (secondaryInformation == "SJF")
+    {
+        //Execute ProcessScheduler
+        ShortestJobFirst();
+    }
     else if (secondaryInformation == "deleteprocess")
     {
         //Delete Process Command Handling
@@ -492,18 +498,21 @@ void processScheduler::commandHandler(command newCommand)
     std::cin.ignore();
 }
 
-void processScheduler::readProcessesFromFile(std::string fileName)
+std::vector<PCB> processScheduler::readProcessesFromFile(std::string fileName)
 {
     std::fstream openedFile;
     openedFile.open(fileName.c_str());
     //Variables for saving
     std::string processName;
+    std::vector<PCB> returnedVector;
     char typeOfProcess;
+    processType newType;
     int priorityOfNewProcess;
     int memoryNeeded;
     int timeRemaining;
     int arrivalTime;
     int CPUPercentage;
+
     //If the file is opened
     if (openedFile.is_open())
     {
@@ -521,7 +530,14 @@ void processScheduler::readProcessesFromFile(std::string fileName)
                 std::cout << "Invalid format. Reading Terminated." << std::endl;
                 break;
             }
-
+            if (typeOfProcess == 'A')
+            {
+                newType = application;
+            }
+            else
+            {
+                newType = system;
+            }
             //Read Priority Number
             openedFile >> priorityOfNewProcess;
             if (priorityOfNewProcess > 128 && priorityOfNewProcess < -127)
@@ -540,6 +556,15 @@ void processScheduler::readProcessesFromFile(std::string fileName)
 
             std::cout << "Process " << processName << " loaded." << std::endl;
 
+            //Create Process
+            PCB newPCB(processName,priorityOfNewProcess,newType);
+            newPCB.setMemoryNeeded(memoryNeeded);
+            newPCB.setTimeRemaining(timeRemaining);
+            newPCB.setArrivalTime(arrivalTime);
+            newPCB.setCPUPercentage(CPUPercentage);
+
+            //Add to returned Vector
+            returnedVector.push_back(newPCB);
         }
 
     }
@@ -550,5 +575,32 @@ void processScheduler::readProcessesFromFile(std::string fileName)
     }
 
     openedFile.close();
-    return;
+    return returnedVector;
+}
+
+
+void processScheduler::ShortestJobFirst()
+{
+    std::string fileName;
+    std::vector<PCB> PCBvector;
+    Node<PCB> * newPCB;
+
+    //Ask for file name
+    std::cout << "Please input a file name: " << std::endl;
+    std::cin >> fileName;
+    PCBvector = readProcessesFromFile(fileName);
+
+    //Sort vector based on time til completion.
+    sortVectorByTimeRemaining(PCBvector);
+
+    for (unsigned int i = 0; i < PCBvector.size(); i++)
+    {
+        newPCB = new Node<PCB>;
+        newPCB -> setData(PCBvector.at(i));
+        insertPCB(newPCB);
+
+    }
+    //Print list with completion time showing.
+    readyQueue.printProcessInformation("ALL");
+    //"Execute" list and return the time until completion
 }

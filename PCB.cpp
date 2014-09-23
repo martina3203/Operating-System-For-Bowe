@@ -49,6 +49,21 @@ void PCB::setPriority(int newPriority)
     priority = newPriority;
 }
 
+void PCB::setArrivalTime(int newTime)
+{
+    arrivalTime = newTime;
+}
+
+void PCB::setTimeRemaining(int newTime)
+{
+    timeRemaining = newTime;
+}
+
+void PCB::setCPUPercentage(int newPercentage)
+{
+    CPUPercentageInUse = newPercentage;
+}
+
 //Return Functions
 std::string PCB::returnProcessName()
 {
@@ -76,4 +91,19 @@ int PCB::returnPriority()
 int PCB::returnAmountOfMemory()
 {
     return memoryAllocatedAmount;
+}
+
+int PCB::returnArrivalTime()
+{
+    return arrivalTime;
+}
+
+int PCB::returnCPUPercentage()
+{
+    return CPUPercentageInUse;
+}
+
+int PCB::returnTimeRemaining()
+{
+    return timeRemaining;
 }

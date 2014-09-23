@@ -45,9 +45,10 @@ class processScheduler
         void removePCB(Node<PCB> * targetPCB);
         void freePCB(Node<PCB> * targetPCB);
         void commandHandler(command newCommand);
-        void readProcessesFromFile(std::string fileName);
+        std::vector<PCB> readProcessesFromFile(std::string fileName);
     protected:
     private:
+        void ShortestJobFirst();
         PCB currentProcess;
         processQueue readyQueue;
         processQueue blockedQueue;
