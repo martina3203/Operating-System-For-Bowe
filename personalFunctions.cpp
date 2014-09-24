@@ -55,7 +55,7 @@ void sortVectorByTimeRemaining(std::vector<PCB> &targetVector)
         for (unsigned int i = 0; i < targetVector.size()-1; i++)
         {
             //If the first PCB Arrival Time is Greater than the next
-            if ((exchangedVector.at(i).returnTimeRemaining()) > (exchangedVector.at(i+1).returnTimeRemaining()))
+            if ((exchangedVector.at(i).returnTimeRemaining()) < (exchangedVector.at(i+1).returnTimeRemaining()))
             {
                 PCB savedPCB = exchangedVector.at(i);
                 exchangedVector.at(i) = exchangedVector.at(i+1);

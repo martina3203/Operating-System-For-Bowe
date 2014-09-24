@@ -68,7 +68,7 @@ void processQueue::printProcessInformation(std::string name)
             {
                 if (name == currentList.at(i).returnProcessName())
                 {
-                    std::cout << "Name        | State |\tProc. Type | Memory Used | Priority" << std::endl <<std::endl;
+                    std::cout << "Name        | State |\tProc. Type | Memory Used | Priority | Time Remaining" << std::endl <<std::endl;
                     std::cout << constructStringToSize(name,14);
                     //Prints State of the Program
                     if (currentList.at(i).returnCurrentState() == ready)
@@ -98,7 +98,8 @@ void processQueue::printProcessInformation(std::string name)
                         std::cout << "App.\t\t";
                     }
 
-                    std::cout << currentList.at(i).returnAmountOfMemory() << "\t\t" << currentList.at(i).returnPriority() << std::endl;
+                    std::cout << currentList.at(i).returnAmountOfMemory() << "\t\t" << currentList.at(i).returnPriority() <<
+                    "\t\t" << currentList.at(i).returnTimeRemaining() << std::endl;
                     return;
                 }
             }
@@ -109,7 +110,7 @@ void processQueue::printProcessInformation(std::string name)
             std::vector<PCB> currentList = theList.returnDataAsVector();
             if (currentList.size() != 0)
             {
-                std::cout << "Name        | State |\tProc. Type | Memory Used | Priority" << std::endl <<std::endl;
+                std::cout << "Name        | State |\tProc. Type | Memory Used | Priority | Time Remaining" << std::endl <<std::endl;
                 for (unsigned int i = 0; i < currentList.size(); i++)
                 {
                         if (i % 19 == 18)
@@ -145,7 +146,8 @@ void processQueue::printProcessInformation(std::string name)
                             std::cout << "  App.\t\t";
                         }
 
-                        std::cout << currentList.at(i).returnAmountOfMemory() << "\t\t" << currentList.at(i).returnPriority() << std::endl;
+                        std::cout << currentList.at(i).returnAmountOfMemory() << "\t\t" << currentList.at(i).returnPriority() <<
+                            "\t\t" << currentList.at(i).returnTimeRemaining() << std::endl;
                 }
             }
         }
@@ -185,9 +187,7 @@ processScheduler::~processScheduler()
 
 void processScheduler::test()
 {
-    readProcessesFromFile("chicken.txt");
     ShortestJobFirst();
-    readyQueue.printProcessInformation("ALL");
 
     return;
 }
@@ -583,7 +583,7 @@ void processScheduler::ShortestJobFirst()
 {
     std::string fileName;
     std::vector<PCB> PCBvector;
-    Node<PCB> * newPCB;
+    Node<PCB> * currentPCB;
 
     //Ask for file name
     std::cout << "Please input a file name: " << std::endl;
@@ -595,12 +595,47 @@ void processScheduler::ShortestJobFirst()
 
     for (unsigned int i = 0; i < PCBvector.size(); i++)
     {
-        newPCB = new Node<PCB>;
-        newPCB -> setData(PCBvector.at(i));
-        insertPCB(newPCB);
+        currentPCB = new Node<PCB>;
+        currentPCB -> setData(PCBvector.at(i));
+        insertPCB(currentPCB);
 
     }
     //Print list with completion time showing.
     readyQueue.printProcessInformation("ALL");
     //"Execute" list and return the time until completion
+
+    int currentTime = 0;
+    int totalTime = 0;
+    int averageTurnAroundTime = 0;
+    runningProcess = NULL;
+    //While list is not empty and there is no active nodes
+    while ((readyQueue.returnTotalNumberOfNodes() != 0) || (runningProcess != NULL))
+    {
+        if (runningProcess == NULL)
+        {
+            //Make first program the running process
+            runningProcess = readyQueue.returnHeadProcess();
+            //Find and remove this process from the Ready queue
+            std::cout << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+            currentTime = runningProcess -> returnData().returnTimeRemaining();
+            totalTime = totalTime + currentTime;
+            averageTurnAroundTime = averageTurnAroundTime + totalTime;
+            std::cout << averageTurnAroundTime;
+            removePCB(runningProcess);
+        }
+        currentTime = currentTime--;
+        if (currentTime <= 0)
+        {
+            //Remove PCB as the job is completed
+            std::cout << runningProcess -> returnData().returnProcessName() << " has finished running." << std::endl;
+            freePCB(runningProcess);
+            runningProcess = NULL;
+        }
+    }
+    //calculate turnaround time
+    averageTurnAroundTime = averageTurnAroundTime / PCBvector.size();
+
+
+    std::cout << "Process Queue was completed in " << totalTime << " Seconds." << std::endl;
+    std::cout << "The average turnaround time is " << averageTurnAroundTime << " Seconds." << std::endl;
 }

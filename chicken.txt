@@ -1,2 +1,4 @@
-TestProcess A 24 128 500 15 25
+TestProcess A 24 128 300 15 25
 chicken A 19 120 300 15 60
+william A 50 120 200 15 20
+nigel A 50 120 200 15 20

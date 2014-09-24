@@ -49,7 +49,7 @@ class processScheduler
     protected:
     private:
         void ShortestJobFirst();
-        PCB currentProcess;
+        Node<PCB> * runningProcess;
         processQueue readyQueue;
         processQueue blockedQueue;
 };
