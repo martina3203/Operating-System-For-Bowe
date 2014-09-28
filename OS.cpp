@@ -114,7 +114,7 @@ void OS::executeOrder(command newCommand)
     }
     else if (keyword == "process")
     {
-        systemProcesses.commandHandler(newCommand);
+        //systemProcesses.commandHandler(newCommand);
     }
     else
     {

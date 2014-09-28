@@ -2,10 +2,8 @@
 
 int main()
 {
-    //OS blueScreenSimulator2014;
-    //blueScreenSimulator2014.execute();
 
-    processScheduler newScheduler;
-    newScheduler.test();
+    processScheduler newSchedule;
+    newSchedule.test();
     return 1;
 }

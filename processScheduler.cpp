@@ -169,11 +169,14 @@ void processQueue::test()
     return;
 }
 
+std::vector<PCB> processQueue::returnVector()
+{
+    return theList.returnDataAsVector();
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 //Scheduler Functions
 //////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 processScheduler::processScheduler()
 {
@@ -187,7 +190,7 @@ processScheduler::~processScheduler()
 
 void processScheduler::test()
 {
-    ShortestJobFirst();
+    roundRobin();
 
     return;
 }
@@ -635,7 +638,458 @@ void processScheduler::ShortestJobFirst()
     //calculate turnaround time
     averageTurnAroundTime = averageTurnAroundTime / PCBvector.size();
 
-
+    //Output useful information
     std::cout << "Process Queue was completed in " << totalTime << " Seconds." << std::endl;
     std::cout << "The average turnaround time is " << averageTurnAroundTime << " Seconds." << std::endl;
+    return;
+}
+
+void processScheduler::FirstInFirstOut()
+{
+    std::string fileName;
+    std::vector<PCB> PCBvector;
+    Node<PCB> * currentPCB;
+
+    //Ask for file name
+    std::cout << "Please input a file name: " << std::endl;
+    std::cin >> fileName;
+    PCBvector = readProcessesFromFile(fileName);
+
+    //Sort vector based on arrivalTime
+    sortVectorByArrivalTime(PCBvector);
+
+    int currentTime = 0;
+    int processRunTime = 0;
+    int averageTurnAroundTime = 0;
+    runningProcess = NULL;
+
+    //While there is possible jobs
+    while (PCBvector.size() != 0 || runningProcess != NULL)
+    {
+        //Travel through the vector and find any programs that must be added to the queue
+        for (int i = PCBvector.size()-1; i >= 0; i--)
+        {
+            //If the process's arrival time is appropriate, add it to the queue and remove from the vector
+            if (PCBvector.at(i).returnArrivalTime() == currentTime)
+            {
+                Node<PCB> * newNode = new Node<PCB>;
+                newNode -> setData(PCBvector.at(i));
+                insertPCB(newNode);
+                std::cout << currentTime << ". " << PCBvector.at(i).returnProcessName() << " was added to the Ready Queue." << std::endl;
+                //Remove the value added to the Queue
+                PCBvector.pop_back();
+            }
+        }
+
+        //If the process has run it's course
+        if (runningProcess != NULL && runningProcess -> returnData().returnTimeRemaining() == processRunTime)
+        {
+            std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName()
+                << " was completed." << std::endl;
+            freePCB(runningProcess);
+            runningProcess = NULL;
+        }
+
+        if (readyQueue.returnTotalNumberOfNodes() != 0 && runningProcess == NULL)
+        {
+            //Add to running process
+            runningProcess = readyQueue.returnHeadProcess();
+            removePCB(runningProcess);
+            std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName()
+                << " is now running." << std::endl;
+            processRunTime = 0;
+        }
+
+        currentTime = currentTime++;
+        processRunTime = processRunTime++;
+    }
+
+    return;
+}
+
+void processScheduler::STCF()
+{
+    std::string fileName;
+    std::vector<PCB> PCBvector;
+
+    //Ask for file name
+    std::cout << "Please input a file name: " << std::endl;
+    std::cin >> fileName;
+    PCBvector = readProcessesFromFile(fileName);
+
+    //Sort vector based on arrivalTime
+    sortVectorByArrivalTime(PCBvector);
+
+    int currentTime = 0;
+    int processRunTime = 0;
+    int averageTurnAroundTime = 0;
+    runningProcess = NULL;
+
+    while ((PCBvector.size() != 0) || (runningProcess != NULL))
+    {
+        //Travel through the vector and find any programs that must be added to the queue
+        for (int i = PCBvector.size()-1; i >= 0; i--)
+        {
+            //If the process's arrival time is appropriate, add it to the queue and remove from the vector
+            if (PCBvector.at(i).returnArrivalTime() == currentTime)
+            {
+                Node<PCB> * newNode = new Node<PCB>;
+                newNode -> setData(PCBvector.at(i));
+                insertPCB(newNode);
+                std::cout << currentTime << ". " << PCBvector.at(i).returnProcessName() << " was added to the Ready Queue." << std::endl;
+                //Remove the value added to the Queue
+                PCBvector.pop_back();
+            }
+        }
+
+        //If the running processes time is down to zero
+        if ((runningProcess != NULL) && (runningProcess -> returnData().returnTimeRemaining() <= 0))
+        {
+            std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " was completed." << std::endl;
+            freePCB(runningProcess);
+            runningProcess = NULL;
+        }
+
+        //If the running process is empty and there are still jobs in the queue
+        if ((runningProcess == NULL) && (readyQueue.returnTotalNumberOfNodes() != 0))
+        {
+            runningProcess = readyQueue.returnLastProcess();
+            readyQueue.removeNode(runningProcess);
+            std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running" << std::endl;
+        }
+
+        //If there is a running process and there is jobs in the queue
+        //Check for a shorter job
+        if ((runningProcess != NULL) && (readyQueue.returnTotalNumberOfNodes() != 0))
+        {
+            //If there is a shorter job on the queue
+            std::vector<PCB> dataVector = readyQueue.returnVector();
+            for (int i = 0; i < dataVector.size(); i++)
+            {
+                if (runningProcess -> returnData().returnTimeRemaining() > dataVector.at(i).returnTimeRemaining())
+                {
+                    //Replaces process with the lower process
+                    std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " has been paused." << std::endl;
+                    insertPCB(runningProcess);
+                    runningProcess = readyQueue.removeNode(findPCB(dataVector.at(i).returnProcessName()));
+                    std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                }
+            }
+        }
+
+        if (runningProcess != NULL)
+        {
+            //Update time remaining on process
+            PCB current = runningProcess -> returnData();
+            current.setTimeRemaining(current.returnTimeRemaining()-1);
+            runningProcess -> setData(current);
+        }
+
+        //increment time
+        currentTime = currentTime++;
+    }
+}
+
+void processScheduler::FPPS()
+{
+    std::string fileName;
+    std::vector<PCB> PCBvector;
+    Node<PCB> * currentPCB;
+
+    //Ask for file name
+    std::cout << "Please input a file name: " << std::endl;
+    std::cin >> fileName;
+    PCBvector = readProcessesFromFile(fileName);
+
+    //Sort vector based on arrivalTime
+    sortVectorByArrivalTime(PCBvector);
+
+    int currentTime = 0;
+    int processRunTime = 0;
+    int averageTurnAroundTime = 0;
+    runningProcess = NULL;
+
+
+    while ((PCBvector.size() != 0) || (runningProcess != NULL))
+    {
+        //Travel through the vector and find any programs that must be added to the queue
+        for (int i = PCBvector.size()-1; i >= 0; i--)
+        {
+            //std::cout << "Stuck here";
+            //If the process's arrival time is appropriate, add it to the queue and remove from the vector
+            if (PCBvector.at(i).returnArrivalTime() == currentTime)
+            {
+                Node<PCB> * newNode = new Node<PCB>;
+                newNode -> setData(PCBvector.at(i));
+                insertPCB(newNode);
+                std::cout << currentTime << ". " << PCBvector.at(i).returnProcessName() << " was added to the Ready Queue." << std::endl;
+                //Remove the value added to the Queue
+                PCBvector.pop_back();
+            }
+        }
+
+        //If the running processes time is down to zero
+        if ((runningProcess != NULL) && (runningProcess -> returnData().returnTimeRemaining() <= 0))
+        {
+            std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName()
+                << " was completed." << std::endl;
+            freePCB(runningProcess);
+            runningProcess = NULL;
+        }
+
+        //If the running process is empty and there are still jobs in the queue
+        if ((runningProcess == NULL) && (readyQueue.returnTotalNumberOfNodes() != 0))
+        {
+            runningProcess = readyQueue.returnLastProcess();
+            readyQueue.removeNode(runningProcess);
+            std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running" << std::endl;
+        }
+
+        //If there is a running process and there is jobs in the queue
+        //Check for a higher priority
+        if ((runningProcess != NULL) && (readyQueue.returnTotalNumberOfNodes() != 0))
+        {
+            //If there is a higher priority on the queue
+            std::vector<PCB> dataVector = readyQueue.returnVector();
+            for (int i = 0; i < dataVector.size(); i++)
+            {
+                if (runningProcess -> returnData().returnPriority() < dataVector.at(i).returnPriority())
+                {
+                    //Replaces process with the lower process
+                    std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " has been paused." << std::endl;
+                    insertPCB(runningProcess);
+                    runningProcess = readyQueue.removeNode(findPCB(dataVector.at(i).returnProcessName()));
+                    std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                }
+            }
+        }
+
+        if (runningProcess != NULL)
+        {
+            //Update time remaining on process
+            PCB current = runningProcess -> returnData();
+            current.setTimeRemaining(current.returnTimeRemaining()-1);
+            runningProcess -> setData(current);
+        }
+
+        //increment time
+        currentTime = currentTime++;
+    }
+
+    return;
+}
+
+void processScheduler::roundRobin()
+{
+    std::string fileName;
+    std::vector<PCB> PCBvector;
+    Node<PCB> * currentPCB;
+    int timeQuantum = 0;
+
+    //Ask for file name
+    std::cout << "Please input a file name: " << std::endl;
+    std::cin >> fileName;
+    PCBvector = readProcessesFromFile(fileName);
+    while (timeQuantum < 1)
+    {
+        std::cout << "Please input a positive integer value for the Time Quantum" << std::endl;
+        std::cin >> timeQuantum;
+    }
+
+    //Sort vector based on arrivalTime
+    sortVectorByArrivalTime(PCBvector);
+
+    int currentTime = 0;
+    int processRunTime = 0;
+    int averageTurnAroundTime = 0;
+    runningProcess = NULL;
+
+    while ((PCBvector.size() != 0) || (runningProcess != NULL))
+    {
+        for (int i = PCBvector.size()-1; i >= 0; i--)
+        {
+            //If the process's arrival time is appropriate, add it to the queue and remove from the vector
+            if (PCBvector.at(i).returnArrivalTime() == currentTime)
+            {
+                Node<PCB> * newNode = new Node<PCB>;
+                newNode -> setData(PCBvector.at(i));
+                insertPCB(newNode);
+                std::cout << currentTime << ". " << PCBvector.at(i).returnProcessName() << " was added to the Ready Queue." << std::endl;
+                //Remove the value added to the Queue
+                PCBvector.pop_back();
+            }
+        }
+
+
+        if (runningProcess != NULL && runningProcess -> returnData().returnTimeRemaining() == 0)
+        {
+            std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName()
+                << " was completed." << std::endl;
+            freePCB(runningProcess);
+            runningProcess = NULL;
+        }
+
+        if (readyQueue.returnTotalNumberOfNodes() != 0)
+        {
+            if (runningProcess == NULL)
+            {
+                runningProcess = readyQueue.returnLastProcess();
+                removePCB(runningProcess);
+                std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+            }
+            else
+            {
+                if (currentTime % timeQuantum == 0)
+                {
+                    std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " has been paused." << std::endl;
+                    insertPCB(runningProcess);
+                    runningProcess = readyQueue.returnLastProcess();
+                    removePCB(runningProcess);
+                    std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                }
+            }
+        }
+
+        if (runningProcess != NULL)
+        {
+            //Update time remaining on process
+            PCB current = runningProcess -> returnData();
+            current.setTimeRemaining(current.returnTimeRemaining()-1);
+            runningProcess -> setData(current);
+        }
+
+
+        currentTime = currentTime++;
+    }
+
+
+    return;
+}
+
+void processScheduler::MLQF()
+{
+    return;
+}
+
+void processScheduler::lottery()
+{
+    std::string fileName;
+    std::vector<PCB> PCBvector;
+    Node<PCB> * currentPCB;
+    int tickets = 0;
+
+    //Ask for file name
+    std::cout << "Please input a file name: " << std::endl;
+    std::cin >> fileName;
+    PCBvector = readProcessesFromFile(fileName);
+    while (tickets < 1)
+    {
+        std::cout << "Please input a positive number of tickets to be used by the processes: " << std::endl;
+        std::cin >> tickets;
+    }
+
+    //Check for valid percentages
+    int totalCPU = 0;
+    for (unsigned int i = 0; i < PCBvector.size(); i++)
+    {
+        totalCPU = totalCPU + PCBvector.at(i).returnCPUPercentage();
+        if (totalCPU > 100)
+        {
+            std::cout << "Total Process Percentage is greater than 100. Exiting." << std::endl;
+            return;
+        }
+    }
+
+    //Sort vector based on arrivalTime
+    sortVectorByArrivalTime(PCBvector);
+
+    int currentTime = 0;
+    int processRunTime = 0;
+    int averageTurnAroundTime = 0;
+    runningProcess = NULL;
+
+    //Seed for random number generation
+    srand(time(NULL));
+
+    while ((PCBvector.size() != 0) || (runningProcess != NULL))
+    {
+        for (int i = PCBvector.size()-1; i >= 0; i--)
+        {
+            //If the process's arrival time is appropriate, add it to the queue and remove from the vector
+            if (PCBvector.at(i).returnArrivalTime() == currentTime)
+            {
+                Node<PCB> * newNode = new Node<PCB>;
+                newNode -> setData(PCBvector.at(i));
+                insertPCB(newNode);
+                std::cout << currentTime << ". " << PCBvector.at(i).returnProcessName() << " was added to the Ready Queue." << std::endl;
+                //Remove the value added to the Queue
+                PCBvector.pop_back();
+            }
+        }
+
+
+        if (runningProcess != NULL && runningProcess -> returnData().returnTimeRemaining() == 0)
+        {
+            std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName()
+                << " was completed." << std::endl;
+            freePCB(runningProcess);
+            runningProcess = NULL;
+        }
+        if (readyQueue.returnTotalNumberOfNodes() == 0)
+        {
+            //Let the process run
+        }
+        else
+        {
+            //Calculate current process
+            std::vector<PCB> CPUVector = readyQueue.returnVector();
+            if (CPUVector.size() != 0)
+            {
+                sortVectorByCPU(CPUVector);
+                //Set the maximum interval with the current processes
+                int maxRandomNumber = findMaxTicketCount(CPUVector,tickets);
+                std::cout << maxRandomNumber;
+                int beginningInterval = 0;
+                int randomTicket = rand() % maxRandomNumber;
+                std::cout << randomTicket;
+                //select random number
+                for (int i = 0; i < CPUVector.size(); i++)
+                {
+                    //If the random number is between the beginning interval and the maximum value for the interval
+                    if (randomTicket < (maxRandomNumber * (CPUVector.at(i).returnCPUPercentage()/100)) && randomTicket > beginningInterval)
+                    {
+                        //Load process
+                        if (runningProcess != NULL)
+                        {
+                            if ((CPUVector.at(i).returnProcessName()) == (runningProcess -> returnData().returnProcessName()))
+                            {
+                                //Do nothing. The Process is the same.
+                                break;
+                            }
+                        }
+                        if (runningProcess != NULL)
+                        {
+                            std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " has been paused." << std::endl;
+                            insertPCB(runningProcess);
+                        }
+
+                        runningProcess = readyQueue.removeNode(findPCB(CPUVector.at(i).returnProcessName()));
+                        std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                    }
+                }
+            }
+
+        }
+        if(runningProcess != NULL)
+        {
+            //Update time remaining on process
+            PCB current = runningProcess -> returnData();
+            current.setTimeRemaining(current.returnTimeRemaining()-1);
+            runningProcess -> setData(current);
+        }
+
+        currentTime = currentTime++;
+    }
+
+    return;
 }

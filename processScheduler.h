@@ -1,6 +1,9 @@
 #ifndef PROCESSSCHEDULER_H
 #define PROCESSSCHEDULER_H
 
+#include <stdlib.h>
+#include <time.h>
+
 #include "linkedList.h"
 #include "personalFunctions.h"
 #include "command.h"
@@ -23,9 +26,11 @@ public:
     Node<PCB> * findProcess(std::string name);
     Node<PCB> * removeNode(Node<PCB> * targetPCB);
     int returnTotalNumberOfNodes();
+    std::vector<PCB> returnVector();
     void printQueue();
     void printProcessInformation(std::string name);
     void test();
+
 private:
     linkedList theList;
     int totalNumberOfNodes;
@@ -49,6 +54,12 @@ class processScheduler
     protected:
     private:
         void ShortestJobFirst();
+        void FirstInFirstOut();
+        void STCF();
+        void FPPS();
+        void roundRobin();
+        void lottery();
+        void MLQF();
         Node<PCB> * runningProcess;
         processQueue readyQueue;
         processQueue blockedQueue;
