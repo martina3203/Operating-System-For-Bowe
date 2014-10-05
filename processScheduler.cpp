@@ -295,110 +295,41 @@ void processScheduler::removePCB(Node<PCB> * targetPCB)
 void processScheduler::commandHandler(command newCommand)
 {
     newCommand.convert(2);
+    //Converts all information to a lower case setting
     std::string secondaryInformation = newCommand.returnTargetInformation();
 
-    if (secondaryInformation == "createprocess")
+    //First In First Out
+    if (secondaryInformation == "fifo")
     {
-        //Creation of Process
-        int userNumber;
-        int processPriorityNumber;
-        bool validAnswer = false;
-        std::cout << "Input Process Name: " << std::endl;
-        std::string process;
-        std::cin >> process;
-
-        //Checks and receives a valid priority number
-        while (validAnswer == false)
-        {
-            std::cout << "Input the priority number: " << std::endl;
-            std::cin >> userNumber;
-            if ((userNumber < 128) && (userNumber > -127))
-            {
-                validAnswer = true;
-                processPriorityNumber = userNumber;
-            }
-            else
-            {
-                std::cout << "Invalid priority number:" << std::endl;
-            }
-        }
-        validAnswer = false;
-        //Checks and receives system or application
-        while (validAnswer == false)
-        {
-            int userNumber;
-            std::cout << "Press 1 for system or 2 for application" << std::endl;
-            std::cin >> userNumber;
-            if (userNumber == 1)
-            {
-                setupPCB(process,processPriorityNumber,system);
-                validAnswer = true;
-            }
-            else if (userNumber == 2)
-            {
-                setupPCB(process,processPriorityNumber,application);
-                validAnswer = true;
-            }
-            else
-            {
-                std::cout << "Invalid Answer" << std::endl;
-            }
-        }
+        FirstInFirstOut();
     }
-    else if (secondaryInformation == "SJF")
+    //Shortest Job First
+    else if (secondaryInformation == "sfj")
     {
         //Execute ProcessScheduler
         ShortestJobFirst();
     }
-    else if (secondaryInformation == "deleteprocess")
+    //Shortest time to Completion First
+    else if (secondaryInformation == "stcf")
     {
-        //Delete Process Command Handling
-        std::string targetProcess;
-        std::cout << "List name of the process to be deleted: " << std::endl;
-        std::cin >> targetProcess;
-        removePCB(findPCB(targetProcess));
+        STCF();
     }
-
-    else if (secondaryInformation == "blockprocess")
+    //First Priority Pre-Emptive Scheduling
+    else if (secondaryInformation == "fpps")
     {
-        std::string targetProcess;
-        std::cout << "List name of the process to be blocked: " << std::endl;
-        std::cin >> targetProcess;
-        Node<PCB> * savedNode = findPCB(targetProcess);
-        if (savedNode != NULL)
-        {
-            PCB savedPCB = savedNode -> returnData();
-            savedPCB.setCurrentState(blocked);
-            removePCB(savedNode);
-            savedNode -> setData(savedPCB);
-            insertPCB(savedNode);
-        }
-        else
-        {
-            std::cout << "Process Not Found" << std::endl;
-        }
+        FPPS();
     }
-
-    else if (secondaryInformation == "unblockprocess")
+    //Round Robin
+    else if (secondaryInformation == "roundrobin")
     {
-        std::string targetProcess;
-        std::cout << "List name of the process to be set to ready: " << std::endl;
-        std::cin >> targetProcess;
-        Node<PCB> * savedNode = findPCB(targetProcess);
-        if (savedNode != NULL)
-        {
-            PCB savedPCB = savedNode -> returnData();
-            savedPCB.setCurrentState(ready);
-            removePCB(savedNode);
-            savedNode -> setData(savedPCB);
-            insertPCB(savedNode);
-        }
-        else
-        {
-            std::cout << "Process Not Found" << std::endl;
-        }
+        roundRobin();
     }
-
+    //Lottery Schedule
+    else if (secondaryInformation == "lottery")
+    {
+        lottery();
+    }
+    //Suspend a process named by the user
     else if (secondaryInformation == "suspendprocess")
     {
         std::string targetProcess;
@@ -581,7 +512,6 @@ std::vector<PCB> processScheduler::readProcessesFromFile(std::string fileName)
     return returnedVector;
 }
 
-
 void processScheduler::ShortestJobFirst()
 {
     std::string fileName;
@@ -649,6 +579,8 @@ void processScheduler::FirstInFirstOut()
     std::string fileName;
     std::vector<PCB> PCBvector;
     Node<PCB> * currentPCB;
+    std::ofstream outputFile;
+    outputFile.open("FIFO.txt");
 
     //Ask for file name
     std::cout << "Please input a file name: " << std::endl;
@@ -675,7 +607,7 @@ void processScheduler::FirstInFirstOut()
                 Node<PCB> * newNode = new Node<PCB>;
                 newNode -> setData(PCBvector.at(i));
                 insertPCB(newNode);
-                std::cout << currentTime << ". " << PCBvector.at(i).returnProcessName() << " was added to the Ready Queue." << std::endl;
+                outputFile << currentTime << ". " << PCBvector.at(i).returnProcessName() << " was added to the Ready Queue." << std::endl;
                 //Remove the value added to the Queue
                 PCBvector.pop_back();
             }
@@ -684,7 +616,7 @@ void processScheduler::FirstInFirstOut()
         //If the process has run it's course
         if (runningProcess != NULL && runningProcess -> returnData().returnTimeRemaining() == processRunTime)
         {
-            std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName()
+            outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName()
                 << " was completed." << std::endl;
             freePCB(runningProcess);
             runningProcess = NULL;
@@ -695,7 +627,7 @@ void processScheduler::FirstInFirstOut()
             //Add to running process
             runningProcess = readyQueue.returnHeadProcess();
             removePCB(runningProcess);
-            std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName()
+            outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName()
                 << " is now running." << std::endl;
             processRunTime = 0;
         }
@@ -704,6 +636,9 @@ void processScheduler::FirstInFirstOut()
         processRunTime = processRunTime++;
     }
 
+    //Close file
+    outputFile.close();
+    std::cout << "Information is saved in FIFO.txt" << std::endl;
     return;
 }
 
@@ -711,6 +646,8 @@ void processScheduler::STCF()
 {
     std::string fileName;
     std::vector<PCB> PCBvector;
+    std::ofstream outputFile;
+    outputFile.open("STCF.txt");
 
     //Ask for file name
     std::cout << "Please input a file name: " << std::endl;
@@ -736,7 +673,7 @@ void processScheduler::STCF()
                 Node<PCB> * newNode = new Node<PCB>;
                 newNode -> setData(PCBvector.at(i));
                 insertPCB(newNode);
-                std::cout << currentTime << ". " << PCBvector.at(i).returnProcessName() << " was added to the Ready Queue." << std::endl;
+                outputFile << currentTime << ". " << PCBvector.at(i).returnProcessName() << " was added to the Ready Queue." << std::endl;
                 //Remove the value added to the Queue
                 PCBvector.pop_back();
             }
@@ -745,7 +682,7 @@ void processScheduler::STCF()
         //If the running processes time is down to zero
         if ((runningProcess != NULL) && (runningProcess -> returnData().returnTimeRemaining() <= 0))
         {
-            std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " was completed." << std::endl;
+            outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " was completed." << std::endl;
             freePCB(runningProcess);
             runningProcess = NULL;
         }
@@ -755,7 +692,7 @@ void processScheduler::STCF()
         {
             runningProcess = readyQueue.returnLastProcess();
             readyQueue.removeNode(runningProcess);
-            std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running" << std::endl;
+            outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running" << std::endl;
         }
 
         //If there is a running process and there is jobs in the queue
@@ -769,10 +706,10 @@ void processScheduler::STCF()
                 if (runningProcess -> returnData().returnTimeRemaining() > dataVector.at(i).returnTimeRemaining())
                 {
                     //Replaces process with the lower process
-                    std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " has been paused." << std::endl;
+                    outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " has been paused." << std::endl;
                     insertPCB(runningProcess);
                     runningProcess = readyQueue.removeNode(findPCB(dataVector.at(i).returnProcessName()));
-                    std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                    outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
                 }
             }
         }
@@ -788,12 +725,19 @@ void processScheduler::STCF()
         //increment time
         currentTime = currentTime++;
     }
+
+    //Close file
+    outputFile.close();
+    std::cout << "Information is saved in STCF.txt" << std::endl;
+    return;
 }
 
 void processScheduler::FPPS()
 {
     std::string fileName;
     std::vector<PCB> PCBvector;
+    std::ofstream outputFile;
+    outputFile.open("FPPS.txt");
     Node<PCB> * currentPCB;
 
     //Ask for file name
@@ -822,7 +766,7 @@ void processScheduler::FPPS()
                 Node<PCB> * newNode = new Node<PCB>;
                 newNode -> setData(PCBvector.at(i));
                 insertPCB(newNode);
-                std::cout << currentTime << ". " << PCBvector.at(i).returnProcessName() << " was added to the Ready Queue." << std::endl;
+                outputFile << currentTime << ". " << PCBvector.at(i).returnProcessName() << " was added to the Ready Queue." << std::endl;
                 //Remove the value added to the Queue
                 PCBvector.pop_back();
             }
@@ -831,7 +775,7 @@ void processScheduler::FPPS()
         //If the running processes time is down to zero
         if ((runningProcess != NULL) && (runningProcess -> returnData().returnTimeRemaining() <= 0))
         {
-            std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName()
+            outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName()
                 << " was completed." << std::endl;
             freePCB(runningProcess);
             runningProcess = NULL;
@@ -842,7 +786,7 @@ void processScheduler::FPPS()
         {
             runningProcess = readyQueue.returnLastProcess();
             readyQueue.removeNode(runningProcess);
-            std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running" << std::endl;
+            outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running" << std::endl;
         }
 
         //If there is a running process and there is jobs in the queue
@@ -856,10 +800,10 @@ void processScheduler::FPPS()
                 if (runningProcess -> returnData().returnPriority() < dataVector.at(i).returnPriority())
                 {
                     //Replaces process with the lower process
-                    std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " has been paused." << std::endl;
+                    outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " has been paused." << std::endl;
                     insertPCB(runningProcess);
                     runningProcess = readyQueue.removeNode(findPCB(dataVector.at(i).returnProcessName()));
-                    std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                    outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
                 }
             }
         }
@@ -876,6 +820,9 @@ void processScheduler::FPPS()
         currentTime = currentTime++;
     }
 
+    //Close file
+    outputFile.close();
+    std::cout << "Information is saved in FPPS.txt" << std::endl;
     return;
 }
 
@@ -883,6 +830,9 @@ void processScheduler::roundRobin()
 {
     std::string fileName;
     std::vector<PCB> PCBvector;
+    std::ofstream outputFile;
+    outputFile.open("RoundRobin.txt");
+
     Node<PCB> * currentPCB;
     int timeQuantum = 0;
 
@@ -914,7 +864,7 @@ void processScheduler::roundRobin()
                 Node<PCB> * newNode = new Node<PCB>;
                 newNode -> setData(PCBvector.at(i));
                 insertPCB(newNode);
-                std::cout << currentTime << ". " << PCBvector.at(i).returnProcessName() << " was added to the Ready Queue." << std::endl;
+                outputFile << currentTime << ". " << PCBvector.at(i).returnProcessName() << " was added to the Ready Queue." << std::endl;
                 //Remove the value added to the Queue
                 PCBvector.pop_back();
             }
@@ -923,7 +873,7 @@ void processScheduler::roundRobin()
 
         if (runningProcess != NULL && runningProcess -> returnData().returnTimeRemaining() == 0)
         {
-            std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName()
+            outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName()
                 << " was completed." << std::endl;
             freePCB(runningProcess);
             runningProcess = NULL;
@@ -935,17 +885,17 @@ void processScheduler::roundRobin()
             {
                 runningProcess = readyQueue.returnLastProcess();
                 removePCB(runningProcess);
-                std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
             }
             else
             {
                 if (currentTime % timeQuantum == 0)
                 {
-                    std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " has been paused." << std::endl;
+                    outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " has been paused." << std::endl;
                     insertPCB(runningProcess);
                     runningProcess = readyQueue.returnLastProcess();
                     removePCB(runningProcess);
-                    std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                    outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
                 }
             }
         }
@@ -962,7 +912,10 @@ void processScheduler::roundRobin()
         currentTime = currentTime++;
     }
 
+    //Close file
+    outputFile.close();
 
+    std::cout << "Information is saved in RoundRobin.txt" << std::endl;
     return;
 }
 

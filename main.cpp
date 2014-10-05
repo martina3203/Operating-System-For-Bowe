@@ -3,7 +3,7 @@
 int main()
 {
 
-    processScheduler newSchedule;
-    newSchedule.test();
+    OS OperatingSys;
+    OperatingSys.execute();
     return 1;
 }
