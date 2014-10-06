@@ -304,7 +304,7 @@ void processScheduler::commandHandler(command newCommand)
         FirstInFirstOut();
     }
     //Shortest Job First
-    else if (secondaryInformation == "sfj")
+    else if (secondaryInformation == "sjf")
     {
         //Execute ProcessScheduler
         ShortestJobFirst();
@@ -533,8 +533,6 @@ void processScheduler::ShortestJobFirst()
         insertPCB(currentPCB);
 
     }
-    //Print list with completion time showing.
-    readyQueue.printProcessInformation("ALL");
     //"Execute" list and return the time until completion
 
     int currentTime = 0;
@@ -553,9 +551,9 @@ void processScheduler::ShortestJobFirst()
             currentTime = runningProcess -> returnData().returnTimeRemaining();
             totalTime = totalTime + currentTime;
             averageTurnAroundTime = averageTurnAroundTime + totalTime;
-            std::cout << averageTurnAroundTime;
             removePCB(runningProcess);
         }
+
         currentTime = currentTime--;
         if (currentTime <= 0)
         {
@@ -593,6 +591,7 @@ void processScheduler::FirstInFirstOut()
     int currentTime = 0;
     int processRunTime = 0;
     int averageTurnAroundTime = 0;
+    int totalProcesses = PCBvector.size();
     runningProcess = NULL;
 
     //While there is possible jobs
@@ -619,6 +618,7 @@ void processScheduler::FirstInFirstOut()
             outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName()
                 << " was completed." << std::endl;
             freePCB(runningProcess);
+            averageTurnAroundTime = averageTurnAroundTime + currentTime;
             runningProcess = NULL;
         }
 
@@ -638,6 +638,7 @@ void processScheduler::FirstInFirstOut()
 
     //Close file
     outputFile.close();
+    std::cout << "Average turn Around Time is: " << averageTurnAroundTime/totalProcesses << " seconds." << std::endl;
     std::cout << "Information is saved in FIFO.txt" << std::endl;
     return;
 }
@@ -660,6 +661,7 @@ void processScheduler::STCF()
     int currentTime = 0;
     int processRunTime = 0;
     int averageTurnAroundTime = 0;
+    int totalProcesses = PCBvector.size();
     runningProcess = NULL;
 
     while ((PCBvector.size() != 0) || (runningProcess != NULL))
@@ -685,6 +687,7 @@ void processScheduler::STCF()
             outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " was completed." << std::endl;
             freePCB(runningProcess);
             runningProcess = NULL;
+            averageTurnAroundTime = averageTurnAroundTime + currentTime;
         }
 
         //If the running process is empty and there are still jobs in the queue
@@ -728,6 +731,7 @@ void processScheduler::STCF()
 
     //Close file
     outputFile.close();
+    std::cout << "Average Turn Around Time is: " << averageTurnAroundTime/totalProcesses << " seconds." << std::endl;
     std::cout << "Information is saved in STCF.txt" << std::endl;
     return;
 }
@@ -751,6 +755,7 @@ void processScheduler::FPPS()
     int currentTime = 0;
     int processRunTime = 0;
     int averageTurnAroundTime = 0;
+    int totalProcesses = PCBvector.size();
     runningProcess = NULL;
 
 
@@ -779,6 +784,7 @@ void processScheduler::FPPS()
                 << " was completed." << std::endl;
             freePCB(runningProcess);
             runningProcess = NULL;
+            averageTurnAroundTime = averageTurnAroundTime + currentTime;
         }
 
         //If the running process is empty and there are still jobs in the queue
@@ -822,6 +828,7 @@ void processScheduler::FPPS()
 
     //Close file
     outputFile.close();
+    std::cout << "Average Turn Around Time is: " << averageTurnAroundTime/totalProcesses <<
     std::cout << "Information is saved in FPPS.txt" << std::endl;
     return;
 }
