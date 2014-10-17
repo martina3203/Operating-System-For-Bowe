@@ -5,6 +5,7 @@
 #include "OSInfo.h"
 #include "PCB.h"
 #include "processScheduler.h"
+#include "memoryManager.h"
 
 class OS
 {

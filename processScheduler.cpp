@@ -613,7 +613,7 @@ void processScheduler::FirstInFirstOut()
         }
 
         //If the process has run it's course
-        if (runningProcess != NULL && runningProcess -> returnData().returnTimeRemaining() == processRunTime)
+        if ((runningProcess != NULL) && (runningProcess -> returnData().returnTimeRemaining() == processRunTime))
         {
             outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName()
                 << " was completed." << std::endl;
@@ -622,7 +622,7 @@ void processScheduler::FirstInFirstOut()
             runningProcess = NULL;
         }
 
-        if (readyQueue.returnTotalNumberOfNodes() != 0 && runningProcess == NULL)
+        if ((readyQueue.returnTotalNumberOfNodes()) != 0 && (runningProcess == NULL))
         {
             //Add to running process
             runningProcess = readyQueue.returnHeadProcess();
@@ -935,7 +935,6 @@ void processScheduler::lottery()
 {
     std::string fileName;
     std::vector<PCB> PCBvector;
-    Node<PCB> * currentPCB;
     int tickets = 0;
 
     //Ask for file name

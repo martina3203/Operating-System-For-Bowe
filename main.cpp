@@ -1,9 +1,11 @@
 #include "OS.h"
 
+
 int main()
 {
-
-    OS OperatingSys;
-    OperatingSys.execute();
+    memoryManager newManager;
+    newManager.test();
+    //OS OperatingSys;
+    //OperatingSys.execute();
     return 1;
 }
