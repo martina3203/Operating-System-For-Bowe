@@ -13,26 +13,20 @@ memoryManager::memoryManager()
 
 memoryManager::~memoryManager()
 {
-    //dtor
-    /*
-    for (int i = 0; i < SIZE_OF_MEMORY; i++)
-    {
-        if (memoryLocation[i] != NULL)
-        {
-            delete memoryLocation[i];
-            memoryLocation[i] = NULL;
-        }
-    }
-    */
+    //Destructor
 }
 
 void memoryManager::test()
 {
     PCB testPCB("Poop");
+    PCB AnotherPCB("Hey");
     testPCB.setMemoryNeeded(100);
+    AnotherPCB.setMemoryNeeded(200);
     insertFirstFit(testPCB);
-    //printMemory();
+    insertFirstFit(AnotherPCB);
+    printMemory();
     removeFromMemory("Poop");
+    removeFromMemory("Hey");
     printMemory();
     return;
 }
@@ -87,6 +81,11 @@ bool memoryManager::insertFirstFit(PCB runningProcess)
                 }
             }
         }
+        else
+        {
+            //Jump to next available position after memory segment
+            i = i + memoryLocation[i] -> returnAmountOfMemory()-1;
+        }
     }
     return processAdded;
 }
@@ -95,12 +94,21 @@ void memoryManager::removeFromMemory(std::string processName)
 {
     for (int i = 0; i < SIZE_OF_MEMORY; i++)
     {
-        if (memoryLocation[i] -> returnProcessName() == processName)
+        //If a process is found
+        if (memoryLocation[i] != NULL)
         {
-            delete memoryLocation[i];
-            memoryLocation[i] = NULL;
-            return;
+            //If the process has the same name as the parameter
+            if ((memoryLocation[i] -> returnProcessName()) == processName)
+            {
+                //Delete it
+                delete memoryLocation[i];
+                memoryLocation[i] = NULL;
+                std::cout << "Delete Completed" << std::endl;
+                return;
+            }
         }
     }
-    return;
+
+    //This only happens if the node is not found
+    std::cout << "Process not found in memory" << std::endl;
 }
