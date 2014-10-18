@@ -6,6 +6,10 @@
 #include <string>
 #include <vector>
 #include "PCB.h"
+#include "memoryManager.h"
+
+//Define a type that is a function pointer
+typedef bool (memoryManager::*functionPointer)(PCB);
 
 std::string convertIntToString(int number);
 
@@ -22,5 +26,7 @@ void sortVectorByPriority(std::vector<PCB> &targetVector);
 void sortVectorByCPU(std::vector<PCB> &targetVector);
 
 int findMaxTicketCount(std::vector<PCB> &targetVector, int totalTickets);
+
+functionPointer returnMemoryInsertionMethod();
 
 #endif // PERSONALFUNCTIONS_CPP

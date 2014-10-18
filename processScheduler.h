@@ -61,8 +61,10 @@ class processScheduler
         void lottery();
         void MLQF();
         Node<PCB> * runningProcess;
+        //Substructures
         processQueue readyQueue;
         processQueue blockedQueue;
+        memoryManager OSMemory;
 };
 
 #endif // PROCESSSCHEDULER_H

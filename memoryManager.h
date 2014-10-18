@@ -26,7 +26,6 @@ private:
     memorySegment * nextSegment;
 };
 
-
 class memoryManager
 {
     public:
@@ -35,9 +34,9 @@ class memoryManager
         void printMemory();
         void test();
         bool insertFirstFit(PCB runningProcess);
-        bool insertNextFit();
-        bool insertBestFit();
-        bool insertWorstFit();
+        bool insertNextFit(PCB runningProcess);
+        bool insertBestFit(PCB runningProcess);
+        bool insertWorstFit(PCB runningProcess);
         void removeFromMemory(std::string processName);
         void collesceMemory();
         void compactMemory();
@@ -45,8 +44,12 @@ class memoryManager
     private:
         void addToOccupiedList(memorySegment *);
         void addToFreeList(memorySegment *);
+        //Head nodes to linked list
         memorySegment * occupiedListHeadNode;
         memorySegment * freeListHeadNode;
+        //These are used in the nextFit function
+        memorySegment * savedLocation;
+        memorySegment * previousToSavedLocation;
 };
 
 #endif // MEMORYMANAGER_H

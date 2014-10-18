@@ -162,3 +162,40 @@ int findMaxTicketCount(std::vector<PCB> &targetVector, int totalTickets)
     maxTickets = (totalCPUInUse/100) * totalTickets;
     return maxTickets;
 }
+
+functionPointer returnMemoryInsertionMethod()
+{
+    std::cout << "Select Memory Method: " << std::endl;
+    std::cout << "1. First Fit " << "2. Next Fit " << "3. Best Fit " << "4. Worst Fit" << std::endl;
+    functionPointer returnedPointer;
+    int input;
+    while (input < 1)
+    {
+        std::cin >> input;
+        switch (input)
+        {
+            case 1:
+                returnedPointer = &memoryManager::insertFirstFit;
+                break;
+            case 2:
+                returnedPointer = &memoryManager::insertNextFit;
+                break;
+            case 3:
+                returnedPointer = &memoryManager::insertBestFit;
+                break;
+            case 4:
+                returnedPointer = &memoryManager::insertWorstFit;
+                break;
+            default:
+                std::cout << "Invalid Input" << std::endl;
+                input = 0;
+                break;
+        }
+    }
+    /*
+    memoryManager newManager;
+    PCB newPCB("HI");
+    std::cout << (newManager.*returnedPointer)(newPCB);
+    */
+    return returnedPointer;
+}
