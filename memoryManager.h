@@ -7,6 +7,25 @@
 #include "PCB.h"
 
 
+class memorySegment
+{
+public:
+    memorySegment();
+    PCB returnPCB();
+    int returnStartLocation();
+    int returnEndLocation();
+    memorySegment * returnNextSegment();
+    void setPCB(PCB newProcess);
+    void setStartLocation(int start);
+    void setEndLocation(int End);
+    void setNextSegment(memorySegment * newNextNode);
+private:
+    PCB theProcess;
+    int startingLocation;
+    int endingLocation;
+    memorySegment * nextSegment;
+};
+
 
 class memoryManager
 {
@@ -24,8 +43,10 @@ class memoryManager
         void compactMemory();
     protected:
     private:
-        PCB * memoryLocation[SIZE_OF_MEMORY];
-        int savedAddress;
+        void addToOccupiedList(memorySegment *);
+        void addToFreeList(memorySegment *);
+        memorySegment * occupiedListHeadNode;
+        memorySegment * freeListHeadNode;
 };
 
 #endif // MEMORYMANAGER_H
