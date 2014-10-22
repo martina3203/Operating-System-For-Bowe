@@ -1,4 +1,6 @@
 TestProcess A 24 60 300 15 10
 chicken A 19 120 300 10 50
 william A 50 40 400 15 20
-nigel A 50 120 200 20 20
+nigel A 50 120 200 20 40
+hiyo A 60 110 200 50 30
+Clint A 60 50 800 20 10

@@ -47,7 +47,6 @@ class PCB
         int returnTimeRemaining();
         int returnArrivalTime();
         int returnCPUPercentage();
-        int returnTickets();
 
     protected:
     private:
@@ -59,7 +58,6 @@ class PCB
         int timeRemaining;
         int arrivalTime;
         int CPUPercentageInUse;
-        int tickets;
 
 };
 

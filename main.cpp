@@ -3,9 +3,7 @@
 
 int main()
 {
-    memoryManager newManager;
-    newManager.test();
-    //OS OperatingSys;
-    //OperatingSys.execute();
+    OS OperatingSys;
+    OperatingSys.execute();
     return 1;
 }

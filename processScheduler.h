@@ -34,9 +34,7 @@ public:
 private:
     linkedList theList;
     int totalNumberOfNodes;
-
 };
-
 
 class processScheduler
 {
@@ -53,12 +51,12 @@ class processScheduler
         std::vector<PCB> readProcessesFromFile(std::string fileName);
     protected:
     private:
-        void ShortestJobFirst();
-        void FirstInFirstOut();
-        void STCF();
-        void FPPS();
-        void roundRobin();
-        void lottery();
+        void ShortestJobFirst(functionPointer);
+        void FirstInFirstOut(functionPointer);
+        void STCF(functionPointer);
+        void FPPS(functionPointer);
+        void roundRobin(functionPointer);
+        void lottery(functionPointer);
         void MLQF();
         Node<PCB> * runningProcess;
         //Substructures

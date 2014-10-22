@@ -25,8 +25,6 @@ void sortVectorByPriority(std::vector<PCB> &targetVector);
 
 void sortVectorByCPU(std::vector<PCB> &targetVector);
 
-int findMaxTicketCount(std::vector<PCB> &targetVector, int totalTickets);
-
 functionPointer returnMemoryInsertionMethod();
 
 #endif // PERSONALFUNCTIONS_CPP

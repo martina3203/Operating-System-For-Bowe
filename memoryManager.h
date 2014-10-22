@@ -38,8 +38,10 @@ class memoryManager
         bool insertBestFit(PCB runningProcess);
         bool insertWorstFit(PCB runningProcess);
         void removeFromMemory(std::string processName);
+        bool checkExistence(std::string processName);
         void collesceMemory();
         void compactMemory();
+        void resetMemory();
     protected:
     private:
         void addToOccupiedList(memorySegment *);

@@ -151,17 +151,6 @@ void sortVectorByCPU(std::vector<PCB> &targetVector)
 
 }
 
-int findMaxTicketCount(std::vector<PCB> &targetVector, int totalTickets)
-{
-    int maxTickets = 0;
-    int totalCPUInUse = 0;
-    for (int i = 0; i < targetVector.size(); i++)
-    {
-        totalCPUInUse = totalCPUInUse + targetVector.at(i).returnCPUPercentage();
-    }
-    maxTickets = (totalCPUInUse/100) * totalTickets;
-    return maxTickets;
-}
 
 functionPointer returnMemoryInsertionMethod()
 {
