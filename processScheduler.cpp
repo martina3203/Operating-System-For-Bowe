@@ -190,7 +190,6 @@ processScheduler::~processScheduler()
 
 void processScheduler::test()
 {
-    roundRobin();
 
     return;
 }
@@ -218,7 +217,6 @@ void processScheduler::freePCB(Node<PCB> * targetPCB)
     targetPCB = NULL;
     return;
 }
-
 
 //Finds a particular PCB, if it exists
 Node<PCB> * processScheduler::findPCB(std::string name)
@@ -301,33 +299,33 @@ void processScheduler::commandHandler(command newCommand)
     //First In First Out
     if (secondaryInformation == "fifo")
     {
-        FirstInFirstOut();
+        FirstInFirstOut(returnMemoryInsertionMethod());
     }
     //Shortest Job First
     else if (secondaryInformation == "sjf")
     {
         //Execute ProcessScheduler
-        ShortestJobFirst();
+        ShortestJobFirst(returnMemoryInsertionMethod());
     }
     //Shortest time to Completion First
     else if (secondaryInformation == "stcf")
     {
-        STCF();
+        STCF(returnMemoryInsertionMethod());
     }
     //First Priority Pre-Emptive Scheduling
     else if (secondaryInformation == "fpps")
     {
-        FPPS();
+        FPPS(returnMemoryInsertionMethod());
     }
     //Round Robin
     else if (secondaryInformation == "roundrobin")
     {
-        roundRobin();
+        roundRobin(returnMemoryInsertionMethod());
     }
     //Lottery Schedule
     else if (secondaryInformation == "lottery")
     {
-        lottery();
+        lottery(returnMemoryInsertionMethod());
     }
     //Suspend a process named by the user
     else if (secondaryInformation == "suspendprocess")
@@ -382,7 +380,6 @@ void processScheduler::commandHandler(command newCommand)
             std::cout << "Process Not Found" << std::endl;
         }
     }
-
     else if (secondaryInformation == "setpriority")
     {
         std::string targetProcess;
@@ -512,7 +509,7 @@ std::vector<PCB> processScheduler::readProcessesFromFile(std::string fileName)
     return returnedVector;
 }
 
-void processScheduler::ShortestJobFirst()
+void processScheduler::ShortestJobFirst(functionPointer InsertionMethod)
 {
     std::string fileName;
     std::vector<PCB> PCBvector;
@@ -531,7 +528,6 @@ void processScheduler::ShortestJobFirst()
         currentPCB = new Node<PCB>;
         currentPCB -> setData(PCBvector.at(i));
         insertPCB(currentPCB);
-
     }
     //"Execute" list and return the time until completion
 
@@ -547,6 +543,11 @@ void processScheduler::ShortestJobFirst()
             //Make first program the running process
             runningProcess = readyQueue.returnHeadProcess();
             //Find and remove this process from the Ready queue
+            if ((OSMemory.*InsertionMethod)(runningProcess -> returnData()) == false)
+            {
+                std::cout << "Process is too big to run on this system." << std::endl;
+                return;
+            }
             std::cout << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
             currentTime = runningProcess -> returnData().returnTimeRemaining();
             totalTime = totalTime + currentTime;
@@ -559,6 +560,8 @@ void processScheduler::ShortestJobFirst()
         {
             //Remove PCB as the job is completed
             std::cout << runningProcess -> returnData().returnProcessName() << " has finished running." << std::endl;
+            std::cout << "Current Time: " << currentTime << std::endl;
+            OSMemory.removeFromMemory(runningProcess -> returnData().returnProcessName());
             freePCB(runningProcess);
             runningProcess = NULL;
         }
@@ -569,10 +572,11 @@ void processScheduler::ShortestJobFirst()
     //Output useful information
     std::cout << "Process Queue was completed in " << totalTime << " Seconds." << std::endl;
     std::cout << "The average turnaround time is " << averageTurnAroundTime << " Seconds." << std::endl;
+    OSMemory.resetMemory();
     return;
 }
 
-void processScheduler::FirstInFirstOut()
+void processScheduler::FirstInFirstOut(functionPointer InsertionMethod)
 {
     std::string fileName;
     std::vector<PCB> PCBvector;
@@ -617,6 +621,9 @@ void processScheduler::FirstInFirstOut()
         {
             outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName()
                 << " was completed." << std::endl;
+            std::cout << "Current Time: " << currentTime << std::endl;
+            OSMemory.printMemory();
+            OSMemory.removeFromMemory(runningProcess -> returnData().returnProcessName());
             freePCB(runningProcess);
             averageTurnAroundTime = averageTurnAroundTime + currentTime;
             runningProcess = NULL;
@@ -626,6 +633,11 @@ void processScheduler::FirstInFirstOut()
         {
             //Add to running process
             runningProcess = readyQueue.returnHeadProcess();
+            if ((OSMemory.*InsertionMethod)(runningProcess -> returnData()) == false)
+            {
+                std::cout << "Process is too big to run on this system" << std::endl;
+                return;
+            }
             removePCB(runningProcess);
             outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName()
                 << " is now running." << std::endl;
@@ -640,10 +652,11 @@ void processScheduler::FirstInFirstOut()
     outputFile.close();
     std::cout << "Average turn Around Time is: " << averageTurnAroundTime/totalProcesses << " seconds." << std::endl;
     std::cout << "Information is saved in FIFO.txt" << std::endl;
+    OSMemory.resetMemory();
     return;
 }
 
-void processScheduler::STCF()
+void processScheduler::STCF(functionPointer InsertionMethod)
 {
     std::string fileName;
     std::vector<PCB> PCBvector;
@@ -685,6 +698,10 @@ void processScheduler::STCF()
         if ((runningProcess != NULL) && (runningProcess -> returnData().returnTimeRemaining() <= 0))
         {
             outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " was completed." << std::endl;
+            OSMemory.printMemory();
+            OSMemory.removeFromMemory(runningProcess -> returnData().returnProcessName());
+            std::cout << "Current Time: " << currentTime << std::endl;
+            pauseForUser();
             freePCB(runningProcess);
             runningProcess = NULL;
             averageTurnAroundTime = averageTurnAroundTime + currentTime;
@@ -694,8 +711,26 @@ void processScheduler::STCF()
         if ((runningProcess == NULL) && (readyQueue.returnTotalNumberOfNodes() != 0))
         {
             runningProcess = readyQueue.returnLastProcess();
-            readyQueue.removeNode(runningProcess);
-            outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running" << std::endl;
+            if (OSMemory.checkExistence(runningProcess -> returnData().returnProcessName()) == false)
+            {
+                if (((OSMemory.*InsertionMethod)(runningProcess -> returnData())) == false)
+                {
+                    //Suspend process
+                    PCB currentPCB = runningProcess -> returnData();
+                    currentPCB.setCurrentState(suspendReady);
+                    runningProcess -> setData(currentPCB);
+                }
+                else
+                {
+                    readyQueue.removeNode(runningProcess);
+                    outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running" << std::endl;
+                }
+            }
+            else
+            {
+                readyQueue.removeNode(runningProcess);
+                outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running" << std::endl;
+            }
         }
 
         //If there is a running process and there is jobs in the queue
@@ -709,10 +744,29 @@ void processScheduler::STCF()
                 if (runningProcess -> returnData().returnTimeRemaining() > dataVector.at(i).returnTimeRemaining())
                 {
                     //Replaces process with the lower process
-                    outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " has been paused." << std::endl;
-                    insertPCB(runningProcess);
-                    runningProcess = readyQueue.removeNode(findPCB(dataVector.at(i).returnProcessName()));
-                    outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                    if (OSMemory.checkExistence(dataVector.at(i).returnProcessName()) == false)
+                    {
+                        if ((OSMemory.*InsertionMethod)(dataVector.at(i)) == false)
+                        {
+                            //Nothing. Let the process continue
+                        }
+                        else
+                        {
+                            outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() <<
+                                " has been paused." << std::endl;
+                            insertPCB(runningProcess);
+                            runningProcess = readyQueue.removeNode(findPCB(dataVector.at(i).returnProcessName()));
+                            outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                        }
+                    }
+                    else
+                    {
+                        outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() <<
+                            " has been paused." << std::endl;
+                        insertPCB(runningProcess);
+                        runningProcess = readyQueue.removeNode(findPCB(dataVector.at(i).returnProcessName()));
+                        outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                    }
                 }
             }
         }
@@ -733,10 +787,11 @@ void processScheduler::STCF()
     outputFile.close();
     std::cout << "Average Turn Around Time is: " << averageTurnAroundTime/totalProcesses << " seconds." << std::endl;
     std::cout << "Information is saved in STCF.txt" << std::endl;
+    OSMemory.resetMemory();
     return;
 }
 
-void processScheduler::FPPS()
+void processScheduler::FPPS(functionPointer InsertionMethod)
 {
     std::string fileName;
     std::vector<PCB> PCBvector;
@@ -764,7 +819,6 @@ void processScheduler::FPPS()
         //Travel through the vector and find any programs that must be added to the queue
         for (int i = PCBvector.size()-1; i >= 0; i--)
         {
-            //std::cout << "Stuck here";
             //If the process's arrival time is appropriate, add it to the queue and remove from the vector
             if (PCBvector.at(i).returnArrivalTime() == currentTime)
             {
@@ -782,6 +836,11 @@ void processScheduler::FPPS()
         {
             outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName()
                 << " was completed." << std::endl;
+            //Print for update before the removal of something
+            OSMemory.printMemory();
+            pauseForUser();
+            //Then Remove
+            OSMemory.removeFromMemory(runningProcess -> returnData().returnProcessName());
             freePCB(runningProcess);
             runningProcess = NULL;
             averageTurnAroundTime = averageTurnAroundTime + currentTime;
@@ -792,6 +851,15 @@ void processScheduler::FPPS()
         {
             runningProcess = readyQueue.returnLastProcess();
             readyQueue.removeNode(runningProcess);
+            if (OSMemory.checkExistence(runningProcess -> returnData().returnProcessName()) == false)
+            {
+                if ((OSMemory.*InsertionMethod)(runningProcess-> returnData()) == false)
+                {
+                    //Leave it empty
+                    insertPCB(runningProcess);
+                    runningProcess = NULL;
+                }
+            }
             outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running" << std::endl;
         }
 
@@ -803,17 +871,38 @@ void processScheduler::FPPS()
             std::vector<PCB> dataVector = readyQueue.returnVector();
             for (int i = 0; i < dataVector.size(); i++)
             {
+                //If there priority of the running process is less than that of th
                 if (runningProcess -> returnData().returnPriority() < dataVector.at(i).returnPriority())
                 {
                     //Replaces process with the lower process
-                    outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " has been paused." << std::endl;
-                    insertPCB(runningProcess);
-                    runningProcess = readyQueue.removeNode(findPCB(dataVector.at(i).returnProcessName()));
-                    outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                    //If it exists in data already
+                    if (OSMemory.checkExistence(dataVector.at(i).returnProcessName()) == false)
+                    {
+                        if ((OSMemory.*InsertionMethod)(dataVector.at(i)) == false)
+                        {
+                            //Nothing
+                        }
+                        else
+                        {
+                            outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " has been paused." << std::endl;
+                            insertPCB(runningProcess);
+                            runningProcess = readyQueue.removeNode(findPCB(dataVector.at(i).returnProcessName()));
+                            outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                        }
+                    }
+                    //Else it already exists in memory, so load it
+                    else
+                    {
+                        outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " has been paused." << std::endl;
+                        insertPCB(runningProcess);
+                        runningProcess = readyQueue.removeNode(findPCB(dataVector.at(i).returnProcessName()));
+                        outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                    }
                 }
             }
         }
 
+        //Update timer on process
         if (runningProcess != NULL)
         {
             //Update time remaining on process
@@ -828,12 +917,14 @@ void processScheduler::FPPS()
 
     //Close file
     outputFile.close();
-    std::cout << "Average Turn Around Time is: " << averageTurnAroundTime/totalProcesses <<
+    OSMemory.resetMemory();
+    averageTurnAroundTime = averageTurnAroundTime/totalProcesses;
+    std::cout << "Average Turn Around Time is: " << averageTurnAroundTime << std::endl;
     std::cout << "Information is saved in FPPS.txt" << std::endl;
     return;
 }
 
-void processScheduler::roundRobin()
+void processScheduler::roundRobin(functionPointer InsertionMethod)
 {
     std::string fileName;
     std::vector<PCB> PCBvector;
@@ -863,6 +954,7 @@ void processScheduler::roundRobin()
 
     while ((PCBvector.size() != 0) || (runningProcess != NULL))
     {
+        //Add Processes as they arrive
         for (int i = PCBvector.size()-1; i >= 0; i--)
         {
             //If the process's arrival time is appropriate, add it to the queue and remove from the vector
@@ -877,36 +969,85 @@ void processScheduler::roundRobin()
             }
         }
 
-
+        //If the process is complete
         if (runningProcess != NULL && runningProcess -> returnData().returnTimeRemaining() == 0)
         {
             outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName()
                 << " was completed." << std::endl;
+            //Remove it and print current memory
+            std::cout << "Current Time: " << currentTime << std::endl;
+            OSMemory.printMemory();
+            pauseForUser();
+            OSMemory.removeFromMemory(runningProcess -> returnData().returnProcessName());
             freePCB(runningProcess);
             runningProcess = NULL;
         }
 
         if (readyQueue.returnTotalNumberOfNodes() != 0)
         {
+            //If there is no currently running process
             if (runningProcess == NULL)
             {
                 runningProcess = readyQueue.returnLastProcess();
-                removePCB(runningProcess);
-                outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                //If it doesn't exist in memory
+                if (OSMemory.checkExistence(runningProcess -> returnData().returnProcessName()) == false)
+                {
+                    //If no room
+                    if ((OSMemory.*InsertionMethod)(runningProcess -> returnData()) == false)
+                    {
+                        //Return this thing back to the list. No room.
+                        insertPCB(runningProcess);
+                        runningProcess = NULL;
+                    }
+                    //There is room
+                    else
+                    {
+                        removePCB(runningProcess);
+                        outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                    }
+                }
+                //Run it
+                else
+                {
+                    removePCB(runningProcess);
+                    outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                }
             }
             else
             {
+                //If the process has used up it's timeQuantum
                 if (currentTime % timeQuantum == 0)
                 {
                     outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " has been paused." << std::endl;
                     insertPCB(runningProcess);
                     runningProcess = readyQueue.returnLastProcess();
-                    removePCB(runningProcess);
-                    outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                    //If it doesn't exist in data
+                    if (OSMemory.checkExistence(runningProcess -> returnData().returnProcessName()) == false)
+                    {
+                        //If no room
+                        if ((OSMemory.*InsertionMethod)(runningProcess -> returnData()) == false)
+                        {
+                            //Return this thing back to the list. No room.
+                            insertPCB(runningProcess);
+                            runningProcess = NULL;
+                        }
+                        //There is room
+                        else
+                        {
+                            removePCB(runningProcess);
+                            outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                        }
+                    }
+                    else
+                    {
+                        removePCB(runningProcess);
+                        outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                    }
                 }
             }
         }
 
+        //Update time Remaining
         if (runningProcess != NULL)
         {
             //Update time remaining on process
@@ -915,13 +1056,12 @@ void processScheduler::roundRobin()
             runningProcess -> setData(current);
         }
 
-
         currentTime = currentTime++;
     }
 
     //Close file
     outputFile.close();
-
+    OSMemory.resetMemory();
     std::cout << "Information is saved in RoundRobin.txt" << std::endl;
     return;
 }
@@ -931,12 +1071,14 @@ void processScheduler::MLQF()
     return;
 }
 
-void processScheduler::lottery()
+void processScheduler::lottery(functionPointer InsertionMethod)
 {
     std::string fileName;
+    std::ofstream outputFile;
     std::vector<PCB> PCBvector;
     int tickets = 0;
 
+    outputFile.open("lottery.txt");
     //Ask for file name
     std::cout << "Please input a file name: " << std::endl;
     std::cin >> fileName;
@@ -945,18 +1087,6 @@ void processScheduler::lottery()
     {
         std::cout << "Please input a positive number of tickets to be used by the processes: " << std::endl;
         std::cin >> tickets;
-    }
-
-    //Check for valid percentages
-    int totalCPU = 0;
-    for (unsigned int i = 0; i < PCBvector.size(); i++)
-    {
-        totalCPU = totalCPU + PCBvector.at(i).returnCPUPercentage();
-        if (totalCPU > 100)
-        {
-            std::cout << "Total Process Percentage is greater than 100. Exiting." << std::endl;
-            return;
-        }
     }
 
     //Sort vector based on arrivalTime
@@ -980,20 +1110,25 @@ void processScheduler::lottery()
                 Node<PCB> * newNode = new Node<PCB>;
                 newNode -> setData(PCBvector.at(i));
                 insertPCB(newNode);
-                std::cout << currentTime << ". " << PCBvector.at(i).returnProcessName() << " was added to the Ready Queue." << std::endl;
+                outputFile << currentTime << ". " << PCBvector.at(i).returnProcessName() << " was added to the Ready Queue." << std::endl;
                 //Remove the value added to the Queue
                 PCBvector.pop_back();
             }
         }
 
-
+        //If the process has run it's time, remove it
         if (runningProcess != NULL && runningProcess -> returnData().returnTimeRemaining() == 0)
         {
-            std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName()
+            outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName()
                 << " was completed." << std::endl;
+            OSMemory.printMemory();
+            pauseForUser();
+            OSMemory.removeFromMemory(runningProcess -> returnData().returnProcessName());
             freePCB(runningProcess);
             runningProcess = NULL;
         }
+
+        //If there is no other nodes in the Queue, continue to run
         if (readyQueue.returnTotalNumberOfNodes() == 0)
         {
             //Let the process run
@@ -1004,18 +1139,16 @@ void processScheduler::lottery()
             std::vector<PCB> CPUVector = readyQueue.returnVector();
             if (CPUVector.size() != 0)
             {
+                int TotalCPU = 0;
                 sortVectorByCPU(CPUVector);
-                //Set the maximum interval with the current processes
-                int maxRandomNumber = findMaxTicketCount(CPUVector,tickets);
-                std::cout << maxRandomNumber;
                 int beginningInterval = 0;
-                int randomTicket = rand() % maxRandomNumber;
-                std::cout << randomTicket;
-                //select random number
+                int randomTicket = rand() % tickets;
+                //Select random number
                 for (int i = 0; i < CPUVector.size(); i++)
                 {
                     //If the random number is between the beginning interval and the maximum value for the interval
-                    if (randomTicket < (maxRandomNumber * (CPUVector.at(i).returnCPUPercentage()/100)) && randomTicket > beginningInterval)
+                    int upperBound = (CPUVector.at(i).returnCPUPercentage()*.01*tickets) + beginningInterval;
+                    if (randomTicket < upperBound && randomTicket > beginningInterval)
                     {
                         //Load process
                         if (runningProcess != NULL)
@@ -1025,20 +1158,84 @@ void processScheduler::lottery()
                                 //Do nothing. The Process is the same.
                                 break;
                             }
+                            else
+                            {
+                                outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " has been paused." << std::endl;
+                                insertPCB(runningProcess);
+                                runningProcess = readyQueue.removeNode(findPCB(CPUVector.at(i).returnProcessName()));
+                                if (OSMemory.checkExistence(runningProcess -> returnData().returnProcessName()) == false)
+                                {
+                                    if ((OSMemory.*InsertionMethod)(runningProcess -> returnData()) == false)
+                                    {
+                                        //Return the Process as there isn't enough room for it
+                                        insertPCB(runningProcess);
+                                        runningProcess = NULL;
+                                    }
+                                    else
+                                    {
+                                        outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                                    }
+                                }
+                                else
+                                {
+                                    outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                                }
+                            }
                         }
-                        if (runningProcess != NULL)
+                        //If it is empty, load her up
+                        else
                         {
-                            std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " has been paused." << std::endl;
-                            insertPCB(runningProcess);
+                            runningProcess = readyQueue.removeNode(findPCB(CPUVector.at(i).returnProcessName()));
+                            if (OSMemory.checkExistence(runningProcess -> returnData().returnProcessName()) == false)
+                            {
+                                if ((OSMemory.*InsertionMethod)(runningProcess -> returnData()) == false)
+                                {
+                                    //Return the Process as there isn't enough room for it
+                                    insertPCB(runningProcess);
+                                    runningProcess = NULL;
+                                }
+                                else
+                                {
+                                    outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                                }
+                            }
+                            else
+                            {
+                                outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                            }
                         }
-
-                        runningProcess = readyQueue.removeNode(findPCB(CPUVector.at(i).returnProcessName()));
-                        std::cout << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
                     }
+                    beginningInterval = upperBound;
                 }
             }
-
         }
+
+        //Load up another process if none was selected as a fail safe
+        if ((runningProcess == NULL) && readyQueue.returnTotalNumberOfNodes() != 0)
+        {
+            runningProcess = readyQueue.returnLastProcess();
+            if (OSMemory.checkExistence(runningProcess -> returnData().returnProcessName()) == false)
+            {
+                if ((OSMemory.*InsertionMethod)(runningProcess -> returnData()) == false)
+                {
+                    //Return the Process as there isn't enough room for it
+                    insertPCB(runningProcess);
+                    runningProcess = NULL;
+                }
+                else
+                {
+                    readyQueue.removeNode(runningProcess);
+                    outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                }
+            }
+            else
+            {
+                readyQueue.removeNode(runningProcess);
+                outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+            }
+        }
+
+        //Update Time on running Process
         if(runningProcess != NULL)
         {
             //Update time remaining on process
@@ -1050,5 +1247,8 @@ void processScheduler::lottery()
         currentTime = currentTime++;
     }
 
+    std::cout << "Information is saved in lottery.txt" << std::endl;
+    outputFile.close();
+    OSMemory.resetMemory();
     return;
 }
