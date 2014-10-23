@@ -194,7 +194,6 @@ void processScheduler::test()
     return;
 }
 
-
 void processScheduler::setupPCB(std::string name,int priority,processType type)
 {
     //Creates the new PCB
@@ -378,7 +377,7 @@ void processScheduler::commandHandler(command newCommand)
     else if (secondaryInformation == "suspendprocess")
     {
         std::string targetProcess;
-        std::cout << "List name of the process to be set to ready: " << std::endl;
+        std::cout << "List name of the process to be suspended: " << std::endl;
         std::cin >> targetProcess;
         Node<PCB> * savedNode = findPCB(targetProcess);
         if (savedNode != NULL)

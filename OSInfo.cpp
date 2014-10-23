@@ -76,20 +76,28 @@ void OSInfo::setDate()
     int input;
     char charInput;
     std::string newDate = "";
-
-    std::cout << "Please input the current month in numerical form:" <<std::endl;
-    std::cin >> input;
+    input = 0;
+    while (input >= 13 || input <= 0)
+    {
+        std::cout << "Please input the current month in numerical form:" <<std::endl;
+        std::cin >> input;
+    }
     newDate = newDate + convertIntToString(input);
 
-
-
-    std::cout << "Please set the current day in numerical form:" <<std::endl;
-    std::cin >> input;
+    input = 0;
+    while (input <= 0 || input >= 32)
+    {
+        std::cout << "Please set the current day in numerical form:" <<std::endl;
+        std::cin >> input;
+    }
     newDate = newDate + "/" + convertIntToString(input);
 
-
-    std::cout << "Please set the current year in numerical form:" << std::endl;
-    std::cin >> input;
+    input = 0;
+    while (input <= 0 || input >= 3000)
+    {
+        std::cout << "Please set the current year in numerical form:" << std::endl;
+        std::cin >> input;
+    }
     newDate = newDate + "/" + convertIntToString(input);
 
     std::cout << "Is this the correct date you want? " << newDate << " Y/N?" << std::endl;
@@ -97,6 +105,10 @@ void OSInfo::setDate()
     if (charInput == 'Y' || charInput == 'y')
     {
         date = newDate;
+    }
+    else
+    {
+        setDate();
     }
     //Clears buffer
     std::cin.ignore();

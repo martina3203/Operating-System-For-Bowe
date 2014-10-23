@@ -14,6 +14,7 @@ PCB::PCB(std::string newName,int priority, processType type)
     TypeOfProcess = type;
     currentState = ready;
     memoryAllocatedAmount = 1;
+    timeRemaining = 1;
 }
 
 PCB::~PCB()
