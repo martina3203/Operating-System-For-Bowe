@@ -175,11 +175,11 @@ int linkedList::returnNodeCount()
     //Traverses list
     if (headNode != NULL)
     {
-        counter = counter++;
+        counter++;
         while (traverseNode -> returnNextPointer() != NULL)
         {
             traverseNode = traverseNode -> returnNextPointer();
-            counter = counter++;
+            counter++;
         }
     }
     return counter;

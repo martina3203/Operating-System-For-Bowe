@@ -3,6 +3,7 @@
 PCB::PCB()
 {
     //Constructor
+    timeRemaining = 1;
 }
 
 PCB::PCB(std::string newName,int priority, processType type)

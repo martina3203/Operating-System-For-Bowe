@@ -192,13 +192,33 @@ void OS::help()
         break;
     case 'B':
     case 'b':
-        std::cout << "The 'print' command allows you to print certain list" << std::endl;
+        std::cout << "The 'print' command allows you to print certain list:" << std::endl;
         std::cout << "print previous commands - will display the previous commands inputted by the user" << std::endl;
         break;
     case 'C':
     case 'c':
-        std::cout << "The 'set' command lets you input specific values for different items" << std::endl;
+        std::cout << "The 'set' command lets you input specific values for different items:" << std::endl;
         std::cout << "set date - user sets the date" << std::endl;
+    case 'D':
+    case 'd':
+        std::cout << "The 'process' command gives you access to all the process functionality available in the OS:" << std::endl;
+        std::cout << "process create process - allows the user to create a process" << std::endl;
+        std::cout << "process delete process - deletes a designated process" << std::endl;
+        std::cout << "process suspend process - suspends a designated process" << std::endl;
+        std::cout << "process resume process - resumes a designated process" << std::endl;
+        std::cout << "process set priority - sets the priority of a designated process" << std::endl;
+        std::cout << "process print ready - prints the processes that are ready" << std::endl;
+        std::cout << "process print blocked - prints the processes that are blocked" << std::endl;
+        std::cout << "process print all - prints all the processes running" << std::endl;
+        std::cout << "process print process - prints a designated process" << std::endl;
+        pauseForUser();
+        std::cout << "process FIFO - starts the First In First Out Process Scheduler" << std::endl;
+        std::cout << "process SJF - starts the Shortest Job First Process Scheduler" << std::endl;
+        std::cout << "process STCF - starts the Shortest Time to Completion First Process Scheduler" << std::endl;
+        std::cout << "process FPPS - starts the FPPS Process Scheduler" << std::endl;
+        std::cout << "process Round Robin - starts the Round Robin Process Scheduler" << std::endl;
+        std::cout << "process Lottery - starts the Lottery Process Scheduler" << std::endl;
+
     case 'Q':
     case 'q':
         break;

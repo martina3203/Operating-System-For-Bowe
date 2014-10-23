@@ -297,7 +297,54 @@ void processScheduler::commandHandler(command newCommand)
     std::string secondaryInformation = newCommand.returnTargetInformation();
 
     //First In First Out
-    if (secondaryInformation == "fifo")
+    if (secondaryInformation == "createprocess")
+    {
+        int userNumber;
+        int processPriorityNumber;
+        bool validAnswer = false;
+        std::cout << "Input Process Name: " << std::endl;
+        std::string process;
+        std::cin >> process;
+
+        //Checks and receives a valid priority number
+        while (validAnswer == false)
+        {
+            std::cout << "Input the priority number: " << std::endl;
+            std::cin >> userNumber;
+            if ((userNumber < 128) && (userNumber > -127))
+            {
+                validAnswer = true;
+                processPriorityNumber = userNumber;
+            }
+            else
+            {
+                std::cout << "Invalid priority number:" << std::endl;
+            }
+        }
+        validAnswer = false;
+        //Checks and receives system or application
+        while (validAnswer == false)
+        {
+            int userNumber;
+            std::cout << "Press 1 for system or 2 for application" << std::endl;
+            std::cin >> userNumber;
+            if (userNumber == 1)
+            {
+                setupPCB(process,processPriorityNumber,system);
+                validAnswer = true;
+            }
+            else if (userNumber == 2)
+            {
+                setupPCB(process,processPriorityNumber,application);
+                validAnswer = true;
+            }
+            else
+            {
+                std::cout << "Invalid Answer" << std::endl;
+            }
+        }
+    }
+    else if (secondaryInformation == "fifo")
     {
         FirstInFirstOut(returnMemoryInsertionMethod());
     }
@@ -561,6 +608,8 @@ void processScheduler::ShortestJobFirst(functionPointer InsertionMethod)
             //Remove PCB as the job is completed
             std::cout << runningProcess -> returnData().returnProcessName() << " has finished running." << std::endl;
             std::cout << "Current Time: " << currentTime << std::endl;
+            OSMemory.printMemory();
+            std::cout << std::endl;
             OSMemory.removeFromMemory(runningProcess -> returnData().returnProcessName());
             freePCB(runningProcess);
             runningProcess = NULL;
@@ -623,6 +672,7 @@ void processScheduler::FirstInFirstOut(functionPointer InsertionMethod)
                 << " was completed." << std::endl;
             std::cout << "Current Time: " << currentTime << std::endl;
             OSMemory.printMemory();
+            std::cout << std::endl;
             OSMemory.removeFromMemory(runningProcess -> returnData().returnProcessName());
             freePCB(runningProcess);
             averageTurnAroundTime = averageTurnAroundTime + currentTime;
@@ -650,7 +700,8 @@ void processScheduler::FirstInFirstOut(functionPointer InsertionMethod)
 
     //Close file
     outputFile.close();
-    std::cout << "Average turn Around Time is: " << averageTurnAroundTime/totalProcesses << " seconds." << std::endl;
+    averageTurnAroundTime = averageTurnAroundTime/ totalProcesses;
+    std::cout << "Average Turnaround Time is: " << averageTurnAroundTime << " seconds." << std::endl;
     std::cout << "Information is saved in FIFO.txt" << std::endl;
     OSMemory.resetMemory();
     return;
@@ -698,10 +749,10 @@ void processScheduler::STCF(functionPointer InsertionMethod)
         if ((runningProcess != NULL) && (runningProcess -> returnData().returnTimeRemaining() <= 0))
         {
             outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " was completed." << std::endl;
-            OSMemory.printMemory();
-            OSMemory.removeFromMemory(runningProcess -> returnData().returnProcessName());
             std::cout << "Current Time: " << currentTime << std::endl;
+            OSMemory.printMemory();
             pauseForUser();
+            OSMemory.removeFromMemory(runningProcess -> returnData().returnProcessName());
             freePCB(runningProcess);
             runningProcess = NULL;
             averageTurnAroundTime = averageTurnAroundTime + currentTime;
@@ -837,7 +888,9 @@ void processScheduler::FPPS(functionPointer InsertionMethod)
             outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName()
                 << " was completed." << std::endl;
             //Print for update before the removal of something
+            std::cout << "Current Time: " << currentTime << std::endl;
             OSMemory.printMemory();
+            std::cout << std::endl;
             pauseForUser();
             //Then Remove
             OSMemory.removeFromMemory(runningProcess -> returnData().returnProcessName());
@@ -950,6 +1003,7 @@ void processScheduler::roundRobin(functionPointer InsertionMethod)
     int currentTime = 0;
     int processRunTime = 0;
     int averageTurnAroundTime = 0;
+    int totalProcesses = PCBvector.size();
     runningProcess = NULL;
 
     while ((PCBvector.size() != 0) || (runningProcess != NULL))
@@ -980,6 +1034,7 @@ void processScheduler::roundRobin(functionPointer InsertionMethod)
             pauseForUser();
             OSMemory.removeFromMemory(runningProcess -> returnData().returnProcessName());
             freePCB(runningProcess);
+            averageTurnAroundTime = averageTurnAroundTime + currentTime;
             runningProcess = NULL;
         }
 
@@ -1062,6 +1117,9 @@ void processScheduler::roundRobin(functionPointer InsertionMethod)
     //Close file
     outputFile.close();
     OSMemory.resetMemory();
+
+    averageTurnAroundTime = averageTurnAroundTime / totalProcesses;
+    std::cout << "The Average Turnaround Time is: " << averageTurnAroundTime << " seconds." << std::endl;
     std::cout << "Information is saved in RoundRobin.txt" << std::endl;
     return;
 }
@@ -1095,6 +1153,7 @@ void processScheduler::lottery(functionPointer InsertionMethod)
     int currentTime = 0;
     int processRunTime = 0;
     int averageTurnAroundTime = 0;
+    int totalProcesses = PCBvector.size();
     runningProcess = NULL;
 
     //Seed for random number generation
@@ -1121,9 +1180,12 @@ void processScheduler::lottery(functionPointer InsertionMethod)
         {
             outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName()
                 << " was completed." << std::endl;
+            std::cout << "Current Time: " << currentTime << std::endl;
             OSMemory.printMemory();
+            std::cout << std::endl;
             pauseForUser();
             OSMemory.removeFromMemory(runningProcess -> returnData().returnProcessName());
+            averageTurnAroundTime = averageTurnAroundTime + currentTime;
             freePCB(runningProcess);
             runningProcess = NULL;
         }
@@ -1247,6 +1309,8 @@ void processScheduler::lottery(functionPointer InsertionMethod)
         currentTime = currentTime++;
     }
 
+    averageTurnAroundTime = averageTurnAroundTime / totalProcesses;
+    std::cout << "The Average Turnaround Time is: " << averageTurnAroundTime << " seconds." << std::endl;
     std::cout << "Information is saved in lottery.txt" << std::endl;
     outputFile.close();
     OSMemory.resetMemory();
