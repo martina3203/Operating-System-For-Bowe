@@ -561,11 +561,15 @@ void processScheduler::ShortestJobFirst(functionPointer InsertionMethod)
     std::string fileName;
     std::vector<PCB> PCBvector;
     Node<PCB> * currentPCB;
-
     //Ask for file name
     std::cout << "Please input a file name: " << std::endl;
     std::cin >> fileName;
     PCBvector = readProcessesFromFile(fileName);
+    //If there was nothing loaded, return
+    if (PCBvector.size() == 0)
+    {
+        return;
+    }
 
     //Sort vector based on time til completion.
     sortVectorByTimeRemaining(PCBvector);
@@ -592,23 +596,25 @@ void processScheduler::ShortestJobFirst(functionPointer InsertionMethod)
             //Find and remove this process from the Ready queue
             if ((OSMemory.*InsertionMethod)(runningProcess -> returnData()) == false)
             {
-                std::cout << "Process is too big to run on this system." << std::endl;
-                return;
+
             }
-            std::cout << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
-            currentTime = runningProcess -> returnData().returnTimeRemaining();
-            totalTime = totalTime + currentTime;
-            averageTurnAroundTime = averageTurnAroundTime + totalTime;
-            removePCB(runningProcess);
+            else
+            {
+                std::cout << runningProcess -> returnData().returnProcessName() << " is now running." << std::endl;
+                currentTime = runningProcess -> returnData().returnTimeRemaining();
+                totalTime = totalTime + currentTime;
+                averageTurnAroundTime = averageTurnAroundTime + totalTime;
+                removePCB(runningProcess);
+            }
         }
 
         currentTime = currentTime--;
         if (currentTime <= 0)
         {
             //Remove PCB as the job is completed
-            std::cout << runningProcess -> returnData().returnProcessName() << " has finished running." << std::endl;
-            std::cout << "Current Time: " << currentTime << std::endl;
             OSMemory.printMemory();
+            std::cout << runningProcess -> returnData().returnProcessName() << " has finished running." << std::endl;
+            pauseForUser();
             std::cout << std::endl;
             OSMemory.removeFromMemory(runningProcess -> returnData().returnProcessName());
             freePCB(runningProcess);
@@ -637,6 +643,11 @@ void processScheduler::FirstInFirstOut(functionPointer InsertionMethod)
     std::cout << "Please input a file name: " << std::endl;
     std::cin >> fileName;
     PCBvector = readProcessesFromFile(fileName);
+    //If there was nothing loaded, return
+    if (PCBvector.size() == 0)
+    {
+        return;
+    }
 
     //Sort vector based on arrivalTime
     sortVectorByArrivalTime(PCBvector);
@@ -718,6 +729,11 @@ void processScheduler::STCF(functionPointer InsertionMethod)
     std::cout << "Please input a file name: " << std::endl;
     std::cin >> fileName;
     PCBvector = readProcessesFromFile(fileName);
+    //If there was nothing loaded, return
+    if (PCBvector.size() == 0)
+    {
+        return;
+    }
 
     //Sort vector based on arrivalTime
     sortVectorByArrivalTime(PCBvector);
@@ -854,6 +870,11 @@ void processScheduler::FPPS(functionPointer InsertionMethod)
     std::cout << "Please input a file name: " << std::endl;
     std::cin >> fileName;
     PCBvector = readProcessesFromFile(fileName);
+    //If there was nothing loaded, return
+    if (PCBvector.size() == 0)
+    {
+        return;
+    }
 
     //Sort vector based on arrivalTime
     sortVectorByArrivalTime(PCBvector);
@@ -991,6 +1012,10 @@ void processScheduler::roundRobin(functionPointer InsertionMethod)
     std::cout << "Please input a file name: " << std::endl;
     std::cin >> fileName;
     PCBvector = readProcessesFromFile(fileName);
+    if (PCBvector.size() == 0)
+    {
+        return;
+    }
     while (timeQuantum < 1)
     {
         std::cout << "Please input a positive integer value for the Time Quantum" << std::endl;

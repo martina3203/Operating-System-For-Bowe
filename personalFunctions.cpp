@@ -14,10 +14,8 @@ std::string convertIntToString(int number)
 //Waits for User to Press Enter before continuing
 void pauseForUser()
 {
-    std::cin.ignore();
-    std::string dumbyVariable;
     std::cout << "Press Enter to Continue." << std::endl;
-    getline(std::cin,dumbyVariable);
+    std::cin.ignore();
 
     return;
 }

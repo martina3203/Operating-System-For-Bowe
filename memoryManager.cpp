@@ -89,17 +89,10 @@ void memoryManager::test()
 {
     PCB testPCB("Poop");
     PCB AnotherPCB("Hey");
-    testPCB.setMemoryNeeded(100);
-    AnotherPCB.setMemoryNeeded(200);
-    insertNextFit(testPCB);
-    insertNextFit(AnotherPCB);
-    removeFromMemory("Poop");
-    insertNextFit(AnotherPCB);
-    removeFromMemory("Hey");
-    collesceMemory();
-    //compactMemory();
-    insertNextFit(testPCB);
-    insertNextFit(AnotherPCB);
+    testPCB.setMemoryNeeded(512);
+    AnotherPCB.setMemoryNeeded(512);
+    insertWorstFit(testPCB);
+    insertWorstFit(AnotherPCB);
     printMemory();
     return;
 }
@@ -258,10 +251,10 @@ bool memoryManager::insertFirstFit(PCB runningProcess)
 
     while (triedEverything == false)
     {
+        memorySegment * previousNode = NULL;
         while (traverse != NULL)
         {
-            memorySegment * previousNode;
-            if ((traverse -> returnEndLocation() - traverse -> returnStartLocation()) >= memoryNeeded)
+            if ((traverse -> returnEndLocation() - traverse -> returnStartLocation()+1) >= memoryNeeded)
             {
                 memorySegment * newSegment = new memorySegment;
                 newSegment -> setPCB(runningProcess);
@@ -270,11 +263,10 @@ bool memoryManager::insertFirstFit(PCB runningProcess)
                 newSegment -> setEndLocation((newSegment -> returnStartLocation()) + memoryNeeded - 1);
                 //Add to list
                 addToOccupiedList(newSegment);
-
                 //Change current node to reflect the addition of a process
                 traverse -> setStartLocation(newSegment-> returnEndLocation()+1);
                 //IF this segment is the same in start and end
-                if (traverse -> returnStartLocation() == traverse -> returnEndLocation())
+                if (traverse -> returnStartLocation() > traverse -> returnEndLocation())
                 {
                     std::cout << "Block is depleted. Deleting." << std::endl;
                     if (previousNode != NULL)
@@ -282,7 +274,12 @@ bool memoryManager::insertFirstFit(PCB runningProcess)
                         //Connect previous node to the node following traverse to continue to coke line
                         previousNode -> setNextSegment(traverse -> returnNextSegment());
                     }
+                    else if (traverse == freeListHeadNode)
+                    {
+                        freeListHeadNode = traverse -> returnNextSegment();
+                    }
                     delete traverse;
+                    traverse = NULL;
                 }
                 processAdded = true;
                 return processAdded;
@@ -326,7 +323,7 @@ bool memoryManager::insertNextFit(PCB runningProcess)
         while (traverse -> returnNextSegment() != savedLocation)
         {
             //If the segment is big enough
-            if ((traverse -> returnEndLocation() - traverse -> returnStartLocation()) >= memoryNeeded)
+            if ((traverse -> returnEndLocation() - traverse -> returnStartLocation()+1) >= memoryNeeded)
             {
                 memorySegment * newSegment = new memorySegment;
                 newSegment -> setPCB(runningProcess);
@@ -339,7 +336,7 @@ bool memoryManager::insertNextFit(PCB runningProcess)
                 //Change current node to reflect the addition of a process
                 traverse -> setStartLocation(newSegment-> returnEndLocation()+1);
                 //IF this segment is the same in start and end
-                if (traverse -> returnStartLocation() == traverse -> returnEndLocation())
+                if (traverse -> returnStartLocation() > traverse -> returnEndLocation())
                 {
                     std::cout << "Block is depleted. Deleting." << std::endl;
                     if (previous != NULL)
@@ -351,10 +348,16 @@ bool memoryManager::insertNextFit(PCB runningProcess)
                     }
                     else
                     {
-                        savedLocation = previous -> returnNextSegment();
+                        savedLocation = traverse -> returnNextSegment();
                         previousToSavedLocation = NULL;
                     }
+                    //If this node is the headpointer, save the next location as the head node
+                    if (traverse == freeListHeadNode)
+                    {
+                        freeListHeadNode = traverse -> returnNextSegment();
+                    }
                     delete traverse;
+                    traverse = NULL;
                 }
                 else
                 {
@@ -414,7 +417,7 @@ bool memoryManager::insertBestFit(PCB runningProcess)
         while (traverse != NULL)
         {
             //If this node is smaller than the current best size
-            int segmentSize = traverse -> returnEndLocation() - traverse -> returnStartLocation();
+            int segmentSize = traverse -> returnEndLocation() - traverse -> returnStartLocation()+1;
             if (segmentSize >= memoryNeeded)
             {
                 //If this segment is of the best fit for the new segment
@@ -443,7 +446,7 @@ bool memoryManager::insertBestFit(PCB runningProcess)
             //Change current node to reflect the addition of a process
             bestSegment -> setStartLocation(newSegment-> returnEndLocation()+1);
             //IF this segment is the same in start and end
-            if (bestSegment -> returnStartLocation() == bestSegment -> returnEndLocation())
+            if (bestSegment -> returnStartLocation() > bestSegment -> returnEndLocation())
             {
                 std::cout << "Block is depleted. Deleting." << std::endl;
                 if (beforeBestSegment != NULL)
@@ -451,7 +454,12 @@ bool memoryManager::insertBestFit(PCB runningProcess)
                     //Connect previous node to the node following traverse to continue to coke line
                     beforeBestSegment -> setNextSegment(bestSegment -> returnNextSegment());
                 }
-                delete traverse;
+                if (bestSegment == freeListHeadNode)
+                {
+                    freeListHeadNode = bestSegment -> returnNextSegment();
+                }
+                delete bestSegment;
+                bestSegment = NULL;
             }
             processAdded = true;
             return processAdded;
@@ -494,7 +502,7 @@ bool memoryManager::insertWorstFit(PCB runningProcess)
         while (traverse != NULL)
         {
             //If this node is smaller than the current best size
-            int segmentSize = traverse -> returnEndLocation() - traverse -> returnStartLocation();
+            int segmentSize = traverse -> returnEndLocation() - traverse -> returnStartLocation()+1;
             if (segmentSize >= memoryNeeded)
             {
                 //If this segment is of the best fit for the new segment
@@ -523,7 +531,7 @@ bool memoryManager::insertWorstFit(PCB runningProcess)
             //Change current node to reflect the addition of a process
             worstSegment -> setStartLocation(newSegment-> returnEndLocation()+1);
             //IF this segment is the same in start and end
-            if (worstSegment -> returnStartLocation() == worstSegment -> returnEndLocation())
+            if (worstSegment -> returnStartLocation() > worstSegment -> returnEndLocation())
             {
                 std::cout << "Block is depleted. Deleting." << std::endl;
                 if (beforeWorstSegment != NULL)
@@ -531,7 +539,12 @@ bool memoryManager::insertWorstFit(PCB runningProcess)
                     //Connect previous node to the node following traverse to continue to coke line
                     beforeWorstSegment -> setNextSegment(worstSegment -> returnNextSegment());
                 }
-                delete traverse;
+                if (worstSegment == freeListHeadNode)
+                {
+                    freeListHeadNode = worstSegment -> returnNextSegment();
+                }
+                delete worstSegment;
+                worstSegment = NULL;
             }
             processAdded = true;
             return processAdded;
@@ -615,7 +628,7 @@ void memoryManager::compactMemory()
     //Reallcoate for the free spaces
     memorySegment * newFreeSegment = new memorySegment;
     newFreeSegment -> setStartLocation(currentPosition+1);
-    newFreeSegment -> setEndLocation(1033);
+    newFreeSegment -> setEndLocation(1023);
     newFreeSegment -> setNextSegment(NULL);
     addToFreeList(newFreeSegment);
     //Reset pointers for the NextFit function
