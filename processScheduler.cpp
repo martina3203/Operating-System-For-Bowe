@@ -616,7 +616,7 @@ void processScheduler::ShortestJobFirst(functionPointer InsertionMethod)
             pauseForUser();
             std::cout << std::endl;
             OSMemory.removeFromMemory(runningProcess -> returnData().returnProcessName());
-            freePCB(runningProcess);
+            //freePCB(runningProcess);
             runningProcess = NULL;
         }
     }
@@ -932,8 +932,15 @@ void processScheduler::FPPS(functionPointer InsertionMethod)
                     insertPCB(runningProcess);
                     runningProcess = NULL;
                 }
+                else
+                {
+                    outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running" << std::endl;
+                }
             }
-            outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running" << std::endl;
+            else
+            {
+                outputFile << currentTime << ". " << runningProcess -> returnData().returnProcessName() << " is now running" << std::endl;
+            }
         }
 
         //If there is a running process and there is jobs in the queue

@@ -448,7 +448,6 @@ bool memoryManager::insertBestFit(PCB runningProcess)
             //IF this segment is the same in start and end
             if (bestSegment -> returnStartLocation() > bestSegment -> returnEndLocation())
             {
-                std::cout << "Block is depleted. Deleting." << std::endl;
                 if (beforeBestSegment != NULL)
                 {
                     //Connect previous node to the node following traverse to continue to coke line
@@ -533,7 +532,6 @@ bool memoryManager::insertWorstFit(PCB runningProcess)
             //IF this segment is the same in start and end
             if (worstSegment -> returnStartLocation() > worstSegment -> returnEndLocation())
             {
-                std::cout << "Block is depleted. Deleting." << std::endl;
                 if (beforeWorstSegment != NULL)
                 {
                     //Connect previous node to the node following traverse to continue to coke line
